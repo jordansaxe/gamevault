@@ -8,8 +8,10 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AppSidebar } from "@/components/AppSidebar";
 import { GameSearchBar } from "@/components/GameSearchBar";
-import Dashboard from "@/pages/Dashboard";
+import NewReleases from "@/pages/NewReleases";
+import Upcoming from "@/pages/Upcoming";
 import Library from "@/pages/Library";
+import Wishlist from "@/pages/Wishlist";
 import Lists from "@/pages/Lists";
 import Events from "@/pages/Events";
 import StreamingServices from "@/pages/StreamingServices";
@@ -18,9 +20,12 @@ import NotFound from "@/pages/not-found";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
+      <Route path="/" component={NewReleases} />
+      <Route path="/new-releases" component={NewReleases} />
+      <Route path="/upcoming" component={Upcoming} />
       <Route path="/library" component={Library} />
-      <Route path="/lists" component={Lists} />
+      <Route path="/wishlist" component={Wishlist} />
+      <Route path="/lists/:category?" component={Lists} />
       <Route path="/events" component={Events} />
       <Route path="/services" component={StreamingServices} />
       <Route component={NotFound} />
