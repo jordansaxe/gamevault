@@ -59,7 +59,7 @@ export default function GameDetail() {
     mutationFn: async (status: string) => {
       if (!gameDetail) throw new Error("No game data");
       
-      return apiRequest("/api/games", "POST", {
+      return apiRequest("POST", "/api/games", {
         igdbId: gameDetail.igdbId,
         name: gameDetail.name,
         coverUrl: gameDetail.coverUrl,
@@ -89,7 +89,7 @@ export default function GameDetail() {
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ gameId, status }: { gameId: string; status: string }) => {
-      return apiRequest(`/api/games/${gameId}/status`, "PATCH", { status });
+      return apiRequest("PATCH", `/api/games/${gameId}/status`, { status });
     },
     onSuccess: (_, { status }) => {
       toast({
