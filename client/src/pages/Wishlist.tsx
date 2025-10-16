@@ -1,50 +1,19 @@
 import { GameCard } from "@/components/GameCard";
 import { GameSearchBar } from "@/components/GameSearchBar";
 import { Button } from "@/components/ui/button";
-import { Filter, Heart } from "lucide-react";
-
-//todo: remove mock functionality
-const wishlistGames = [
-  {
-    id: "1",
-    title: "Grand Theft Auto VI",
-    coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co87w4.jpg",
-    status: "wishlist" as const,
-    platforms: ["ps5", "xbox"],
-  },
-  {
-    id: "2",
-    title: "Hollow Knight: Silksong",
-    coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co2m7r.jpg",
-    status: "wishlist" as const,
-    platforms: ["switch", "pc"],
-  },
-  {
-    id: "3",
-    title: "Fable",
-    coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co6mz4.jpg",
-    status: "wishlist" as const,
-    platforms: ["xbox", "pc"],
-  },
-  {
-    id: "4",
-    title: "Baldur's Gate 3",
-    coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co5vb3.jpg",
-    status: "wishlist" as const,
-    metacritic: 96,
-    platforms: ["ps5", "pc"],
-  },
-  {
-    id: "5",
-    title: "Spider-Man 2",
-    coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co6qz1.jpg",
-    status: "wishlist" as const,
-    metacritic: 90,
-    platforms: ["ps5"],
-  },
-];
+import { Filter, Heart, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import type { Game } from "@shared/schema";
 
 export default function Wishlist() {
+  const { data: games = [], isLoading } = useQuery<Game[]>({
+    queryKey: ['/api/games', { status: 'wishlist' }],
+    queryFn: async () => {
+      const res = await fetch('/api/games?status=wishlist');
+      if (!res.ok) throw new Error('Failed to fetch wishlist');
+      return res.json();
+    },
+  });
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -67,15 +36,35 @@ export default function Wishlist() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {wishlistGames.map((game) => (
-          <GameCard
-            key={game.id}
-            {...game}
-            onClick={() => console.log('View game:', game.title)}
-          />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : games.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">
+            No games in your wishlist yet.
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Use the search above to add games!
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {games.map((game) => (
+            <GameCard
+              key={game.id}
+              id={game.id}
+              title={game.name}
+              coverUrl={game.coverUrl || 'https://via.placeholder.com/300x400?text=No+Cover'}
+              status={game.status as any}
+              metacritic={game.metacriticScore || undefined}
+              platforms={game.platforms || []}
+              onClick={() => console.log('View game:', game.name)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
