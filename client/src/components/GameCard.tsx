@@ -6,6 +6,7 @@ import { PlatformIcons } from "./PlatformIcons";
 import { Plus, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useLocation } from "wouter";
 
 interface GameCardProps {
   id: string;
@@ -16,6 +17,7 @@ interface GameCardProps {
   platforms: string[];
   services?: Array<{ service: "ps-plus" | "game-pass" | "apple-arcade" | "geforce-now"; tier?: string }>;
   onClick?: () => void;
+  igdbId?: number;
 }
 
 export function GameCard({ 
@@ -26,16 +28,26 @@ export function GameCard({
   metacritic, 
   platforms, 
   services,
-  onClick 
+  onClick,
+  igdbId
 }: GameCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [, setLocation] = useLocation();
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else if (igdbId) {
+      setLocation(`/game/${igdbId}`);
+    }
+  };
 
   return (
     <Card
       className="group relative overflow-hidden hover-elevate cursor-pointer transition-all duration-200"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={onClick}
+      onClick={handleClick}
       data-testid={`card-game-${id}`}
     >
       <div className="aspect-[3/4] relative">

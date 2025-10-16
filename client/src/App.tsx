@@ -15,6 +15,7 @@ import Wishlist from "@/pages/Wishlist";
 import Lists from "@/pages/Lists";
 import Events from "@/pages/Events";
 import StreamingServices from "@/pages/StreamingServices";
+import GameDetail from "@/pages/GameDetail";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/lists" component={Lists} />
       <Route path="/events" component={Events} />
       <Route path="/services" component={StreamingServices} />
+      <Route path="/game/:igdbId" component={GameDetail} />
       <Route component={NotFound} />
     </Switch>
   );

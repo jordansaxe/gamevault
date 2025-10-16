@@ -72,7 +72,7 @@ export default function Library() {
                   status={game.status as any}
                   metacritic={game.metacriticScore || undefined}
                   platforms={game.platforms || []}
-                  onClick={() => console.log('View game:', game.name)}
+                  igdbId={game.igdbId}
                 />
               ))}
             </div>

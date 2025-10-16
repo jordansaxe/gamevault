@@ -1,4 +1,4 @@
-import { Search, Plus, Loader2 } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import {
@@ -9,10 +9,9 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { apiRequest, queryClient } from "@/lib/queryClient";
 import { PlatformIcons } from "./PlatformIcons";
 import { MetacriticScore } from "./MetacriticScore";
-import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
 interface SearchResult {
   igdbId: number;
@@ -30,7 +29,7 @@ export function GameSearchBar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   useEffect(() => {
     const searchGames = async () => {
@@ -41,7 +40,11 @@ export function GameSearchBar() {
 
       setIsSearching(true);
       try {
-        const response = await apiRequest('POST', '/api/games/search', { query: searchQuery });
+        const response = await fetch('/api/games/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: searchQuery }),
+        });
         const data = await response.json();
         setResults(data);
       } catch (error) {
@@ -56,36 +59,10 @@ export function GameSearchBar() {
     return () => clearTimeout(debounce);
   }, [searchQuery]);
 
-  const handleAddGame = async (game: SearchResult, status: string) => {
-    try {
-      await apiRequest('POST', '/api/games', {
-        igdbId: game.igdbId,
-        name: game.name,
-        coverUrl: game.coverUrl,
-        releaseDate: game.releaseDate,
-        platforms: game.platforms,
-        metacriticScore: game.metacriticScore || null,
-        summary: game.summary || null,
-        genres: game.genres,
-        status,
-      });
-
-      toast({
-        title: "Game added!",
-        description: `${game.name} has been added to your ${status}.`,
-      });
-
-      queryClient.invalidateQueries({ queryKey: ['/api/games'] });
-
-      setOpen(false);
-      setSearchQuery("");
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "Failed to add game",
-      });
-    }
+  const handleGameClick = (igdbId: number) => {
+    setOpen(false);
+    setSearchQuery("");
+    setLocation(`/game/${igdbId}`);
   };
 
   return (
@@ -128,7 +105,7 @@ export function GameSearchBar() {
                   value={game.name}
                   className="flex items-start gap-3 py-3"
                   data-testid={`search-result-${game.igdbId}`}
-                  onSelect={() => handleAddGame(game, 'backlog')}
+                  onSelect={() => handleGameClick(game.igdbId)}
                 >
                   {game.coverUrl && (
                     <img
@@ -150,7 +127,6 @@ export function GameSearchBar() {
                       )}
                     </div>
                   </div>
-                  <Plus className="h-4 w-4 text-muted-foreground" />
                 </CommandItem>
               ))}
             </CommandGroup>
