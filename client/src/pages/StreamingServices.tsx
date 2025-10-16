@@ -48,7 +48,7 @@ export default function StreamingServices() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-display font-semibold" data-testid="text-services-title">
-          Streaming Services
+          Subscription Services
         </h1>
         <p className="text-muted-foreground mt-1">
           Browse games available on your subscriptions

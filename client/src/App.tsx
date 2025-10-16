@@ -25,7 +25,7 @@ function Router() {
       <Route path="/upcoming" component={Upcoming} />
       <Route path="/library" component={Library} />
       <Route path="/wishlist" component={Wishlist} />
-      <Route path="/lists/:category?" component={Lists} />
+      <Route path="/lists" component={Lists} />
       <Route path="/events" component={Events} />
       <Route path="/services" component={StreamingServices} />
       <Route component={NotFound} />
