@@ -35,14 +35,15 @@ Preferred communication style: Simple, everyday language.
 - Custom hooks in `client/src/hooks/`
 
 **Key Features:**
-- Game search functionality with search bar component
+- Real-time game search via IGDB API integration
+- Command dialog interface for search with instant results
+- Game library management with status tracking (playing, completed, backlog, dropped, wishlist)
 - Multiple view types: Grid cards for games, list views for releases
-- Status tracking (playing, completed, backlog, dropped, wishlist)
 - Metacritic score integration with color-coded badges
 - Platform icon display (PS5, Xbox, Switch, PC, Mac)
-- Subscription service badges for game availability
-- Custom list creation and management
-- Events calendar for gaming announcements
+- Subscription service badges for game availability (planned)
+- Custom list creation and management (planned)
+- Events calendar for gaming announcements (planned)
 - Theme toggle between dark and light modes
 
 ### Backend Architecture
@@ -58,13 +59,21 @@ Preferred communication style: Simple, everyday language.
 - Entry point: `server/index.ts` with Express setup
 - Route registration: `server/routes.ts` for API endpoints (prefixed with `/api`)
 - Storage abstraction: `server/storage.ts` with in-memory implementation
+- IGDB service: `server/igdb.ts` for game data integration
 - Vite integration: `server/vite.ts` for development middleware and HMR
 
 **Storage Layer:**
 - Interface-based storage design (`IStorage`) for flexibility
 - Currently implements `MemStorage` (in-memory storage using Maps)
 - Designed for easy migration to database-backed storage
-- CRUD operations for user management (extensible for games, lists, etc.)
+- CRUD operations for games and user management
+
+**IGDB Integration:**
+- Twitch OAuth authentication for IGDB API access
+- Token caching and automatic refresh (~60 day lifetime)
+- Rate limit compliance (4 requests/sec)
+- Backend serves as CORS proxy for browser-safe API calls
+- Fetches game metadata: cover art, platforms, Metacritic scores, release dates, genres
 
 **Development Features:**
 - Hot Module Replacement (HMR) via Vite in development
@@ -81,19 +90,15 @@ Preferred communication style: Simple, everyday language.
 
 **Schema Design (shared/schema.ts):**
 - Users table with UUID primary keys, username, and password fields
+- Games table with IGDB integration:
+  - igdbId: Unique IGDB game identifier
+  - name, coverUrl, releaseDate (with date coercion)
+  - platforms (array), genres (array)
+  - metacriticScore, summary
+  - status tracking (playing/completed/backlog/dropped/wishlist)
 - Drizzle Zod integration for runtime schema validation
 - Type-safe schema inference for TypeScript
 - Migration system via drizzle-kit
-
-**Schema Extensibility:**
-- Current schema supports basic user authentication
-- Designed to be extended with tables for:
-  - Games catalog
-  - User game libraries
-  - Custom lists
-  - Wishlist items
-  - Game status tracking
-  - Events and announcements
 
 ### Authentication & Authorization
 
