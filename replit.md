@@ -150,8 +150,14 @@ Preferred communication style: Simple, everyday language.
 **Components:**
 - `GameDetail.tsx` - Main detail page component
 - Updated `GameSearchBar.tsx` - Navigate to detail instead of direct add
-- Updated `GameCard.tsx` - Navigate to detail on click with igdbId prop
+- Updated `GameCard.tsx` - Navigate to detail on click with igdbId prop (used in Library, Wishlist, Dashboard, Subscription Services)
+- Updated `ReleaseGameCard.tsx` - Navigate to detail on click with igdbId prop (used in New Releases, Upcoming)
 - Status selector with dropdown for all game statuses
+
+**Universal Navigation Pattern:**
+- All game cards across the application (GameCard and ReleaseGameCard) navigate to detail page when clicked
+- Cards use igdbId prop for navigation; falls back to onClick handler if no igdbId provided
+- Pages updated: Dashboard, Subscription Services, New Releases, Upcoming, Library, Wishlist
 
 ### Build & Deployment
 
