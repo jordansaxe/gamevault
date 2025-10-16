@@ -37,6 +37,8 @@ Preferred communication style: Simple, everyday language.
 **Key Features:**
 - Real-time game search via IGDB API integration
 - Command dialog interface for search with instant results
+- **Comprehensive game detail pages** with full metadata, screenshots, developer info, and summary
+- **Enhanced navigation flow:** Search results and library cards navigate to detail pages before adding to library
 - Game library management with status tracking (playing, completed, backlog, dropped, wishlist)
 - Multiple view types: Grid cards for games, list views for releases
 - Metacritic score integration with color-coded badges
@@ -73,7 +75,12 @@ Preferred communication style: Simple, everyday language.
 - Token caching and automatic refresh (~60 day lifetime)
 - Rate limit compliance (4 requests/sec)
 - Backend serves as CORS proxy for browser-safe API calls
-- Fetches game metadata: cover art, platforms, Metacritic scores, release dates, genres
+- Fetches comprehensive game metadata:
+  - Basic: cover art, platforms, Metacritic scores, release dates, genres
+  - Extended: developers, publishers, game modes, player perspectives, themes
+  - Media: screenshots (high-resolution images), video trailers
+  - Story: detailed summary and storyline text
+- Two endpoints: `/api/games/search` for search results, `/api/games/igdb/:id` for detailed game info
 
 **Development Features:**
 - Hot Module Replacement (HMR) via Vite in development
@@ -111,6 +118,40 @@ Preferred communication style: Simple, everyday language.
 - Password storage prepared (implementation pending)
 - UUID-based user IDs for security
 - Session-based authentication ready for implementation
+
+### Game Detail Page Feature
+
+**Implementation (October 2025):**
+- Dedicated game detail page route: `/game/:igdbId`
+- Comprehensive game information display:
+  - Hero background with cover image
+  - Full game metadata (title, platforms, genres, release date)
+  - Developer and publisher information
+  - Metacritic score with color-coded badge
+  - Game summary and storyline
+  - Screenshot gallery with responsive grid
+  - Game modes and player perspectives
+  
+**User Flow:**
+1. Search for game via command dialog → click result → navigate to `/game/:igdbId`
+2. View full game details and information
+3. Select desired status (backlog, playing, completed, wishlist, dropped)
+4. Click "Add to Library" → game added with selected status
+5. From library/wishlist, click game card → navigate back to detail page
+6. For existing library games, shows "In your library" badge and allows status updates
+
+**API Integration:**
+- GET `/api/games/igdb/:igdbId` - Fetches detailed game data from IGDB
+- POST `/api/games` - Adds game to user library with selected status
+- PATCH `/api/games/:id/status` - Updates existing game status
+- Uses `apiRequest(method, url, data)` helper for all mutations
+- TanStack Query for caching and invalidation
+
+**Components:**
+- `GameDetail.tsx` - Main detail page component
+- Updated `GameSearchBar.tsx` - Navigate to detail instead of direct add
+- Updated `GameCard.tsx` - Navigate to detail on click with igdbId prop
+- Status selector with dropdown for all game statuses
 
 ### Build & Deployment
 
