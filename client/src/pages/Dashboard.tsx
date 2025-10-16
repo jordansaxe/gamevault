@@ -10,7 +10,7 @@ import { ArrowRight, Sparkles } from "lucide-react";
 const recentGames = [
   {
     id: "1",
-    igdbId: 119133,
+    igdbId: 119171,
     title: "Baldur's Gate 3",
     coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co5vb3.jpg",
     status: "playing" as const,
@@ -29,17 +29,16 @@ const recentGames = [
   },
   {
     id: "3",
-    igdbId: 119171,
-    title: "Starfield",
-    coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co6qz4.jpg",
+    igdbId: 119133,
+    title: "Elden Ring",
+    coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co4jni.jpg",
     status: "completed" as const,
-    metacritic: 83,
-    platforms: ["xbox", "pc"],
-    services: [{ service: "game-pass" as const, tier: "Ultimate" }],
+    metacritic: 96,
+    platforms: ["ps5", "xbox", "pc"],
   },
   {
     id: "4",
-    igdbId: 25076,
+    igdbId: 26192,
     title: "The Last of Us Part II",
     coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co2gvu.jpg",
     status: "completed" as const,
@@ -48,12 +47,12 @@ const recentGames = [
   },
   {
     id: "5",
-    igdbId: 119133,
-    title: "Zelda: Tears of the Kingdom",
-    coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co5vmg.jpg",
+    igdbId: 103305,
+    title: "Cyberpunk 2077",
+    coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co1rbo.jpg",
     status: "wishlist" as const,
-    metacritic: 96,
-    platforms: ["switch"],
+    metacritic: 86,
+    platforms: ["ps5", "xbox", "pc"],
   },
 ];
 
@@ -110,30 +109,30 @@ export default function Dashboard() {
             <div className="flex items-center justify-between p-3 rounded-md bg-muted/50">
               <div className="flex items-center gap-3">
                 <img
-                  src="https://images.igdb.com/igdb/image/upload/t_cover_small/co5vb3.jpg"
-                  alt="Baldur's Gate 3"
-                  className="h-12 w-9 rounded object-cover"
-                />
-                <div>
-                  <p className="font-medium text-sm">Baldur's Gate 3</p>
-                  <p className="text-xs text-muted-foreground">Added 2 days ago</p>
-                </div>
-              </div>
-              <ServiceBadge service="game-pass" tier="PC" />
-            </div>
-            <div className="flex items-center justify-between p-3 rounded-md bg-muted/50">
-              <div className="flex items-center gap-3">
-                <img
                   src="https://images.igdb.com/igdb/image/upload/t_cover_small/co6qz1.jpg"
                   alt="Spider-Man 2"
                   className="h-12 w-9 rounded object-cover"
                 />
                 <div>
                   <p className="font-medium text-sm">Spider-Man 2</p>
-                  <p className="text-xs text-muted-foreground">Added 5 days ago</p>
+                  <p className="text-xs text-muted-foreground">Added 2 days ago</p>
                 </div>
               </div>
               <ServiceBadge service="ps-plus" tier="Extra" />
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-md bg-muted/50">
+              <div className="flex items-center gap-3">
+                <img
+                  src="https://images.igdb.com/igdb/image/upload/t_cover_small/co1rbo.jpg"
+                  alt="Cyberpunk 2077"
+                  className="h-12 w-9 rounded object-cover"
+                />
+                <div>
+                  <p className="font-medium text-sm">Cyberpunk 2077</p>
+                  <p className="text-xs text-muted-foreground">Added 5 days ago</p>
+                </div>
+              </div>
+              <ServiceBadge service="game-pass" tier="Ultimate" />
             </div>
           </div>
         </CardContent>
