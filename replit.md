@@ -10,11 +10,11 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
-### Mock Data with Verified IGDB IDs (October 2025)
-- Updated all pre-populated game data across Dashboard, Streaming Services, New Releases, and Upcoming pages
-- Replaced estimated IGDB IDs with verified, confirmed IDs through end-to-end testing
-- Ensured all game card navigation works correctly with accurate IGDB data mappings
-- **Verified IGDB IDs in production mock data:**
+### Removed Prepopulated Data (October 2025)
+- Removed all prepopulated data from New Releases, Upcoming, and Lists pages per user request
+- Pages now show empty states with helpful messages and CTAs
+- Dashboard and Subscription Services pages retain mock data for demonstration purposes
+- **Verified IGDB IDs still in use on Dashboard and Subscription Services:**
   - Baldur's Gate 3: 119171
   - Elden Ring: 119133
   - Spider-Man 2: 214905
@@ -23,11 +23,6 @@ Preferred communication style: Simple, everyday language.
   - The Witcher 3: Wild Hunt: 1942
   - Red Dead Redemption 2: 25076
   - Starfield: 174604
-  - Final Fantasy VII Rebirth: 133236
-  - Helldivers 2: 230710
-  - Prince of Persia: The Lost Crown: 230177
-  - Like a Dragon: Infinite Wealth: 230712
-- Note: Upcoming page currently uses released games with verified IDs for navigation accuracy; future updates should source confirmed IGDB IDs for truly upcoming titles
 
 ## System Architecture
 

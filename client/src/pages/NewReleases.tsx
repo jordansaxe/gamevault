@@ -1,53 +1,7 @@
 import { ReleaseGameCard } from "@/components/ReleaseGameCard";
 import { Sparkles } from "lucide-react";
 
-//todo: remove mock functionality
-const newReleases = [
-  {
-    id: "1",
-    igdbId: 133236,
-    title: "Final Fantasy VII Rebirth",
-    coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co7jd3.jpg",
-    releaseDate: "Feb 29, 2024",
-    daysInfo: 3,
-    isReleased: true,
-    metacritic: 92,
-    platforms: ["ps5"],
-  },
-  {
-    id: "2",
-    igdbId: 230710,
-    title: "Helldivers 2",
-    coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co7jg9.jpg",
-    releaseDate: "Feb 8, 2024",
-    daysInfo: 7,
-    isReleased: true,
-    metacritic: 82,
-    platforms: ["ps5", "pc"],
-  },
-  {
-    id: "3",
-    igdbId: 230177,
-    title: "Prince of Persia: The Lost Crown",
-    coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co6z8r.jpg",
-    releaseDate: "Jan 18, 2024",
-    daysInfo: 14,
-    isReleased: true,
-    metacritic: 86,
-    platforms: ["ps5", "xbox", "pc", "switch"],
-  },
-  {
-    id: "4",
-    igdbId: 230712,
-    title: "Like a Dragon: Infinite Wealth",
-    coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co7ba5.jpg",
-    releaseDate: "Jan 26, 2024",
-    daysInfo: 21,
-    isReleased: true,
-    metacritic: 89,
-    platforms: ["ps5", "xbox", "pc"],
-  },
-];
+const newReleases: any[] = [];
 
 export default function NewReleases() {
   return (
@@ -64,14 +18,24 @@ export default function NewReleases() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {newReleases.map((game) => (
-          <ReleaseGameCard
-            key={game.id}
-            {...game}
-          />
-        ))}
-      </div>
+      {newReleases.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center" data-testid="empty-new-releases">
+          <Sparkles className="h-16 w-16 text-muted-foreground/50 mb-4" />
+          <h3 className="text-lg font-medium mb-2">No New Releases</h3>
+          <p className="text-sm text-muted-foreground max-w-md">
+            When games from your wishlist are released, they'll appear here
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {newReleases.map((game) => (
+            <ReleaseGameCard
+              key={game.id}
+              {...game}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

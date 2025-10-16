@@ -1,54 +1,7 @@
 import { ReleaseGameCard } from "@/components/ReleaseGameCard";
 import { Clock } from "lucide-react";
 
-//todo: remove mock functionality
-// Using games with verified IGDB IDs only
-const upcomingGames = [
-  {
-    id: "1",
-    igdbId: 119171,
-    title: "Baldur's Gate 3",
-    coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co5vb3.jpg",
-    releaseDate: "Aug 3, 2023",
-    daysInfo: 30,
-    isReleased: true,
-    metacritic: 96,
-    platforms: ["ps5", "xbox", "pc"],
-  },
-  {
-    id: "2",
-    igdbId: 119133,
-    title: "Elden Ring",
-    coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co4jni.jpg",
-    releaseDate: "Feb 25, 2022",
-    daysInfo: 60,
-    isReleased: true,
-    metacritic: 96,
-    platforms: ["ps5", "xbox", "pc"],
-  },
-  {
-    id: "3",
-    igdbId: 103305,
-    title: "Cyberpunk 2077",
-    coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co1rbo.jpg",
-    releaseDate: "Dec 10, 2020",
-    daysInfo: 90,
-    isReleased: true,
-    metacritic: 86,
-    platforms: ["ps5", "xbox", "pc"],
-  },
-  {
-    id: "4",
-    igdbId: 1942,
-    title: "The Witcher 3: Wild Hunt",
-    coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co1wyy.jpg",
-    releaseDate: "May 19, 2015",
-    daysInfo: 120,
-    isReleased: true,
-    metacritic: 92,
-    platforms: ["ps5", "xbox", "pc", "switch"],
-  },
-];
+const upcomingGames: any[] = [];
 
 export default function Upcoming() {
   return (
@@ -65,14 +18,24 @@ export default function Upcoming() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {upcomingGames.map((game) => (
-          <ReleaseGameCard
-            key={game.id}
-            {...game}
-          />
-        ))}
-      </div>
+      {upcomingGames.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center" data-testid="empty-upcoming-games">
+          <Clock className="h-16 w-16 text-muted-foreground/50 mb-4" />
+          <h3 className="text-lg font-medium mb-2">No Upcoming Games</h3>
+          <p className="text-sm text-muted-foreground max-w-md">
+            Add games to your wishlist to track their upcoming release dates
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {upcomingGames.map((game) => (
+            <ReleaseGameCard
+              key={game.id}
+              {...game}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

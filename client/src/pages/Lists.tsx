@@ -2,57 +2,7 @@ import { ListCard } from "@/components/ListCard";
 import { Button } from "@/components/ui/button";
 import { Plus, ListPlus } from "lucide-react";
 
-//todo: remove mock functionality
-const customLists = [
-  {
-    id: "1",
-    name: "Cozy Games",
-    description: "Relaxing games for unwinding after work",
-    gameCount: 12,
-    coverImages: [
-      "https://images.igdb.com/igdb/image/upload/t_cover_small/co49x5.jpg",
-      "https://images.igdb.com/igdb/image/upload/t_cover_small/co1wyy.jpg",
-      "https://images.igdb.com/igdb/image/upload/t_cover_small/co5vmg.jpg",
-      "https://images.igdb.com/igdb/image/upload/t_cover_small/co2gvu.jpg",
-    ],
-  },
-  {
-    id: "2",
-    name: "Must-Play RPGs",
-    description: "Epic adventures and unforgettable stories",
-    gameCount: 8,
-    coverImages: [
-      "https://images.igdb.com/igdb/image/upload/t_cover_small/co6qz4.jpg",
-      "https://images.igdb.com/igdb/image/upload/t_cover_small/co5vb3.jpg",
-      "https://images.igdb.com/igdb/image/upload/t_cover_small/co49x5.jpg",
-      "https://images.igdb.com/igdb/image/upload/t_cover_small/co1wyy.jpg",
-    ],
-  },
-  {
-    id: "3",
-    name: "Multiplayer Favorites",
-    description: "Best games to play with friends",
-    gameCount: 15,
-    coverImages: [
-      "https://images.igdb.com/igdb/image/upload/t_cover_small/co2gvu.jpg",
-      "https://images.igdb.com/igdb/image/upload/t_cover_small/co6qz1.jpg",
-      "https://images.igdb.com/igdb/image/upload/t_cover_small/co5vb3.jpg",
-      "https://images.igdb.com/igdb/image/upload/t_cover_small/co6qz4.jpg",
-    ],
-  },
-  {
-    id: "4",
-    name: "Horror Collection",
-    description: "Spine-chilling experiences",
-    gameCount: 6,
-    coverImages: [
-      "https://images.igdb.com/igdb/image/upload/t_cover_small/co6pjr.jpg",
-      "https://images.igdb.com/igdb/image/upload/t_cover_small/co2gvu.jpg",
-      "https://images.igdb.com/igdb/image/upload/t_cover_small/co49x5.jpg",
-      "https://images.igdb.com/igdb/image/upload/t_cover_small/co1wyy.jpg",
-    ],
-  },
-];
+const customLists: any[] = [];
 
 export default function Lists() {
   return (
@@ -75,11 +25,25 @@ export default function Lists() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {customLists.map((list) => (
-          <ListCard key={list.id} {...list} />
-        ))}
-      </div>
+      {customLists.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center" data-testid="empty-lists">
+          <ListPlus className="h-16 w-16 text-muted-foreground/50 mb-4" />
+          <h3 className="text-lg font-medium mb-2">No Lists Yet</h3>
+          <p className="text-sm text-muted-foreground max-w-md mb-6">
+            Create custom lists to organize your games by genre, mood, or any category you like
+          </p>
+          <Button onClick={() => console.log('Create custom list')} data-testid="button-create-first-list">
+            <Plus className="h-4 w-4 mr-2" />
+            Create Your First List
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {customLists.map((list) => (
+            <ListCard key={list.id} {...list} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
