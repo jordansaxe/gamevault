@@ -8,7 +8,7 @@ const upcomingGames = [
     igdbId: 204363,
     title: "Grand Theft Auto VI",
     coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co87w4.jpg",
-    releaseDate: "2025",
+    releaseDate: "Fall 2025",
     daysInfo: 180,
     isReleased: false,
     platforms: ["ps5", "xbox"],
