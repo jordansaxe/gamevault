@@ -19,6 +19,25 @@ interface IGDBGame {
   genres?: Array<{ id: number; name: string }>;
 }
 
+interface IGDBGameDetail extends IGDBGame {
+  screenshots?: Array<{ id: number; url: string }>;
+  videos?: Array<{ id: number; video_id: string; name: string }>;
+  involved_companies?: Array<{
+    id: number;
+    company: { id: number; name: string };
+    developer: boolean;
+    publisher: boolean;
+  }>;
+  storyline?: string;
+  game_modes?: Array<{ id: number; name: string }>;
+  player_perspectives?: Array<{ id: number; name: string }>;
+  themes?: Array<{ id: number; name: string }>;
+  aggregated_rating_count?: number;
+  rating_count?: number;
+  total_rating?: number;
+  total_rating_count?: number;
+}
+
 class IGDBService {
   private accessToken: string | null = null;
   private tokenExpiresAt: number = 0;
@@ -108,11 +127,47 @@ class IGDBService {
     return games[0] || null;
   }
 
+  async getGameDetails(id: number): Promise<IGDBGameDetail | null> {
+    const token = await this.getAccessToken();
+
+    const body = `
+      where id = ${id};
+      fields name, cover.url, first_release_date, platforms.name, 
+             aggregated_rating, rating, summary, genres.name,
+             screenshots.url, videos.video_id, videos.name,
+             involved_companies.company.name, involved_companies.developer, involved_companies.publisher,
+             storyline, game_modes.name, player_perspectives.name, themes.name,
+             aggregated_rating_count, rating_count, total_rating, total_rating_count;
+    `;
+
+    const response = await fetch('https://api.igdb.com/v4/games', {
+      method: 'POST',
+      headers: {
+        'Client-ID': this.clientId,
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+      },
+      body: body.trim(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`IGDB API error: ${response.statusText}`);
+    }
+
+    const games: IGDBGameDetail[] = await response.json();
+    return games[0] || null;
+  }
+
   formatCoverUrl(url: string | undefined, size: 'cover_small' | 'cover_big' | 'screenshot_med' = 'cover_big'): string {
+    if (!url) return '';
+    return url.replace('t_thumb', `t_${size}`);
+  }
+
+  formatScreenshotUrl(url: string | undefined, size: 'screenshot_med' | 'screenshot_big' | '1080p' = 'screenshot_big'): string {
     if (!url) return '';
     return url.replace('t_thumb', `t_${size}`);
   }
 }
 
 export const igdbService = new IGDBService();
-export type { IGDBGame };
+export type { IGDBGame, IGDBGameDetail };

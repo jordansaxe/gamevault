@@ -110,6 +110,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/games/igdb/:igdbId", async (req, res) => {
+    try {
+      const igdbId = parseInt(req.params.igdbId);
+      
+      if (isNaN(igdbId)) {
+        return res.status(400).json({ error: 'Invalid game ID' });
+      }
+
+      const game = await igdbService.getGameDetails(igdbId);
+      
+      if (!game) {
+        return res.status(404).json({ error: 'Game not found' });
+      }
+
+      const developers = game.involved_companies
+        ?.filter(ic => ic.developer)
+        .map(ic => ic.company.name) || [];
+      
+      const publishers = game.involved_companies
+        ?.filter(ic => ic.publisher)
+        .map(ic => ic.company.name) || [];
+
+      const formattedGame = {
+        igdbId: game.id,
+        name: game.name,
+        coverUrl: igdbService.formatCoverUrl(game.cover?.url),
+        releaseDate: game.first_release_date ? new Date(game.first_release_date * 1000) : null,
+        platforms: game.platforms?.map(p => p.name) || [],
+        metacriticScore: Math.round(game.aggregated_rating || game.rating || 0),
+        summary: game.summary || '',
+        storyline: game.storyline || '',
+        genres: game.genres?.map(g => g.name) || [],
+        developers,
+        publishers,
+        screenshots: game.screenshots?.map(s => igdbService.formatScreenshotUrl(s.url)) || [],
+        videos: game.videos || [],
+        gameModes: game.game_modes?.map(m => m.name) || [],
+        playerPerspectives: game.player_perspectives?.map(p => p.name) || [],
+        themes: game.themes?.map(t => t.name) || [],
+        ratingCount: game.aggregated_rating_count || game.rating_count || 0,
+      };
+
+      res.json(formattedGame);
+    } catch (error) {
+      console.error('Get game details error:', error);
+      res.status(500).json({ error: 'Failed to get game details' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
