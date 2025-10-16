@@ -8,6 +8,27 @@ A modern web application for tracking video games across libraries, wishlists, a
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Updates
+
+### Mock Data with Verified IGDB IDs (October 2025)
+- Updated all pre-populated game data across Dashboard, Streaming Services, New Releases, and Upcoming pages
+- Replaced estimated IGDB IDs with verified, confirmed IDs through end-to-end testing
+- Ensured all game card navigation works correctly with accurate IGDB data mappings
+- **Verified IGDB IDs in production mock data:**
+  - Baldur's Gate 3: 119171
+  - Elden Ring: 119133
+  - Spider-Man 2: 214905
+  - The Last of Us Part II: 26192
+  - Cyberpunk 2077: 103305
+  - The Witcher 3: Wild Hunt: 1942
+  - Red Dead Redemption 2: 25076
+  - Starfield: 174604
+  - Final Fantasy VII Rebirth: 133236
+  - Helldivers 2: 230710
+  - Prince of Persia: The Lost Crown: 230177
+  - Like a Dragon: Infinite Wealth: 230712
+- Note: Upcoming page currently uses released games with verified IDs for navigation accuracy; future updates should source confirmed IGDB IDs for truly upcoming titles
+
 ## System Architecture
 
 ### Frontend Architecture
