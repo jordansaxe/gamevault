@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { MetacriticScore } from "./MetacriticScore";
 import { PlatformIcons } from "./PlatformIcons";
 import { Calendar, Clock } from "lucide-react";
+import { useLocation } from "wouter";
 
 interface ReleaseGameCardProps {
   id: string;
@@ -13,6 +14,7 @@ interface ReleaseGameCardProps {
   isReleased: boolean;
   metacritic?: number;
   platforms: string[];
+  igdbId?: number;
   onClick?: () => void;
 }
 
@@ -25,8 +27,18 @@ export function ReleaseGameCard({
   isReleased,
   metacritic, 
   platforms,
+  igdbId,
   onClick 
 }: ReleaseGameCardProps) {
+  const [, setLocation] = useLocation();
+
+  const handleClick = () => {
+    if (igdbId) {
+      setLocation(`/game/${igdbId}`);
+    } else if (onClick) {
+      onClick();
+    }
+  };
   const dayText = isReleased 
     ? `${daysInfo} ${daysInfo === 1 ? 'day' : 'days'} ago`
     : `${daysInfo} ${daysInfo === 1 ? 'day' : 'days'} left`;
@@ -34,7 +46,7 @@ export function ReleaseGameCard({
   return (
     <Card
       className="group hover-elevate cursor-pointer overflow-hidden transition-all duration-200"
-      onClick={onClick}
+      onClick={handleClick}
       data-testid={`card-release-${id}`}
     >
       <div className="flex gap-4 p-4">

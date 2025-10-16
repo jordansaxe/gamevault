@@ -8,6 +8,7 @@ const serviceCatalog = {
   "game-pass": [
     {
       id: "1",
+      igdbId: 119171,
       title: "Starfield",
       coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co6qz4.jpg",
       metacritic: 83,
@@ -16,6 +17,7 @@ const serviceCatalog = {
     },
     {
       id: "2",
+      igdbId: 119133,
       title: "Baldur's Gate 3",
       coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co5vb3.jpg",
       metacritic: 96,
@@ -26,6 +28,7 @@ const serviceCatalog = {
   "ps-plus": [
     {
       id: "3",
+      igdbId: 214905,
       title: "Spider-Man 2",
       coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co6qz1.jpg",
       metacritic: 90,
@@ -34,6 +37,7 @@ const serviceCatalog = {
     },
     {
       id: "4",
+      igdbId: 26950,
       title: "Ghost of Tsushima",
       coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co1wyi.jpg",
       metacritic: 83,
@@ -123,7 +127,6 @@ export default function StreamingServices() {
               <GameCard
                 key={game.id}
                 {...game}
-                onClick={() => console.log('View game:', game.title)}
               />
             ))}
           </div>
@@ -135,7 +138,6 @@ export default function StreamingServices() {
               <GameCard
                 key={game.id}
                 {...game}
-                onClick={() => console.log('View game:', game.title)}
               />
             ))}
           </div>
