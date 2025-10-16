@@ -5,6 +5,7 @@ import { Sparkles } from "lucide-react";
 const newReleases = [
   {
     id: "1",
+    igdbId: 119133,
     title: "Baldur's Gate 3",
     coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co5vb3.jpg",
     releaseDate: "Aug 3, 2023",
@@ -15,6 +16,7 @@ const newReleases = [
   },
   {
     id: "2",
+    igdbId: 214905,
     title: "Spider-Man 2",
     coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co6qz1.jpg",
     releaseDate: "Oct 20, 2023",
@@ -25,6 +27,7 @@ const newReleases = [
   },
   {
     id: "3",
+    igdbId: 213210,
     title: "Alan Wake 2",
     coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co6s48.jpg",
     releaseDate: "Oct 27, 2023",
@@ -35,6 +38,7 @@ const newReleases = [
   },
   {
     id: "4",
+    igdbId: 139431,
     title: "Hogwarts Legacy",
     coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co6nq7.jpg",
     releaseDate: "Feb 10, 2023",
@@ -65,7 +69,6 @@ export default function NewReleases() {
           <ReleaseGameCard
             key={game.id}
             {...game}
-            onClick={() => console.log('View game:', game.title)}
           />
         ))}
       </div>

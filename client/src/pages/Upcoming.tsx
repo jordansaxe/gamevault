@@ -5,6 +5,7 @@ import { Clock } from "lucide-react";
 const upcomingGames = [
   {
     id: "1",
+    igdbId: 204363,
     title: "Grand Theft Auto VI",
     coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co87w4.jpg",
     releaseDate: "2025",
@@ -14,6 +15,7 @@ const upcomingGames = [
   },
   {
     id: "2",
+    igdbId: 113806,
     title: "Hollow Knight: Silksong",
     coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co2m7r.jpg",
     releaseDate: "TBA 2025",
@@ -23,6 +25,7 @@ const upcomingGames = [
   },
   {
     id: "3",
+    igdbId: 127344,
     title: "Fable",
     coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co6mz4.jpg",
     releaseDate: "2025",
@@ -32,6 +35,7 @@ const upcomingGames = [
   },
   {
     id: "4",
+    igdbId: 121390,
     title: "The Wolf Among Us 2",
     coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co2ma1.jpg",
     releaseDate: "2025",
@@ -61,7 +65,6 @@ export default function Upcoming() {
           <ReleaseGameCard
             key={game.id}
             {...game}
-            onClick={() => console.log('View game:', game.title)}
           />
         ))}
       </div>

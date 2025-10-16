@@ -10,6 +10,7 @@ import { ArrowRight, Sparkles } from "lucide-react";
 const recentGames = [
   {
     id: "1",
+    igdbId: 119133,
     title: "Baldur's Gate 3",
     coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co5vb3.jpg",
     status: "playing" as const,
@@ -18,6 +19,7 @@ const recentGames = [
   },
   {
     id: "2",
+    igdbId: 214905,
     title: "Spider-Man 2",
     coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co6qz1.jpg",
     status: "backlog" as const,
@@ -27,6 +29,7 @@ const recentGames = [
   },
   {
     id: "3",
+    igdbId: 119171,
     title: "Starfield",
     coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co6qz4.jpg",
     status: "completed" as const,
@@ -36,6 +39,7 @@ const recentGames = [
   },
   {
     id: "4",
+    igdbId: 25076,
     title: "The Last of Us Part II",
     coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co2gvu.jpg",
     status: "completed" as const,
@@ -44,6 +48,7 @@ const recentGames = [
   },
   {
     id: "5",
+    igdbId: 119133,
     title: "Zelda: Tears of the Kingdom",
     coverUrl: "https://images.igdb.com/igdb/image/upload/t_cover_big/co5vmg.jpg",
     status: "wishlist" as const,
@@ -147,7 +152,6 @@ export default function Dashboard() {
             <GameCard
               key={game.id}
               {...game}
-              onClick={() => console.log('View game:', game.title)}
             />
           ))}
         </div>
