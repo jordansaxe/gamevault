@@ -1,10 +1,10 @@
-import { type User, type InsertUser, type Game, type InsertGame } from "@shared/schema";
+import { type User, type UpsertUser, type Game, type InsertGame } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
+  // User operations for Replit Auth
   getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  upsertUser(user: UpsertUser): Promise<User>;
   
   createGame(game: InsertGame): Promise<Game>;
   getGame(id: string): Promise<Game | undefined>;
@@ -28,16 +28,27 @@ export class MemStorage implements IStorage {
     return this.users.get(id);
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const existingUser = this.users.get(userData.id!);
+    const now = new Date();
+    
+    const user: User = existingUser 
+      ? { 
+          ...existingUser, 
+          ...userData,
+          updatedAt: now,
+        } as User
+      : { 
+          id: userData.id || randomUUID(),
+          email: userData.email || null,
+          firstName: userData.firstName || null,
+          lastName: userData.lastName || null,
+          profileImageUrl: userData.profileImageUrl || null,
+          createdAt: now,
+          updatedAt: now,
+        };
+    
+    this.users.set(user.id, user);
     return user;
   }
 
@@ -51,6 +62,7 @@ export class MemStorage implements IStorage {
       coverUrl: insertGame.coverUrl ?? null,
       releaseDate: insertGame.releaseDate ?? null,
       platforms: insertGame.platforms ?? null,
+      platform: insertGame.platform ?? null,
       metacriticScore: insertGame.metacriticScore ?? null,
       summary: insertGame.summary ?? null,
       genres: insertGame.genres ?? null,

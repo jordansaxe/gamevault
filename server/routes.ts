@@ -3,8 +3,23 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { igdbService } from "./igdb";
 import { insertGameSchema } from "@shared/schema";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup Replit Auth
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
   app.post("/api/games/search", async (req, res) => {
     try {
       const { query } = req.body;
@@ -33,9 +48,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/games", async (req, res) => {
+  app.post("/api/games", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = "default-user";
+      const userId = req.user.claims.sub;
       
       const gameData = insertGameSchema.parse({
         ...req.body,
@@ -56,9 +71,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/games", async (req, res) => {
+  app.get("/api/games", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = "default-user";
+      const userId = req.user.claims.sub;
       const status = req.query.status as string | undefined;
 
       const games = status 
@@ -72,7 +87,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/games/:id/status", async (req, res) => {
+  app.patch("/api/games/:id/status", isAuthenticated, async (req, res) => {
     try {
       const { id } = req.params;
       const { status } = req.body;
@@ -94,7 +109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/games/:id", async (req, res) => {
+  app.delete("/api/games/:id", isAuthenticated, async (req, res) => {
     try {
       const { id } = req.params;
       const deleted = await storage.deleteGame(id);
