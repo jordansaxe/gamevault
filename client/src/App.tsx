@@ -14,7 +14,7 @@ import Upcoming from "@/pages/Upcoming";
 import Library from "@/pages/Library";
 import Wishlist from "@/pages/Wishlist";
 import Lists from "@/pages/Lists";
-import Events from "@/pages/Events";
+import Calendar from "@/pages/Calendar";
 import StreamingServices from "@/pages/StreamingServices";
 import GameDetail from "@/pages/GameDetail";
 import Landing from "@/pages/Landing";
@@ -46,7 +46,7 @@ function Router() {
       <Route path="/library" component={Library} />
       <Route path="/wishlist" component={Wishlist} />
       <Route path="/lists" component={Lists} />
-      <Route path="/events" component={Events} />
+      <Route path="/calendar" component={Calendar} />
       <Route path="/services" component={StreamingServices} />
       <Route path="/game/:igdbId" component={GameDetail} />
       <Route component={NotFound} />

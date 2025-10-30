@@ -43,6 +43,7 @@ export default function GameDetail() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [selectedStatus, setSelectedStatus] = useState<string>("backlog");
+  const [selectedPlatform, setSelectedPlatform] = useState<string>("");
 
   const { data: gameDetail, isLoading } = useQuery<GameDetail>({
     queryKey: ["/api/games/igdb", igdbId],
@@ -56,7 +57,7 @@ export default function GameDetail() {
   const userGame = userGames?.find(g => g.igdbId === gameDetail?.igdbId);
 
   const addGameMutation = useMutation({
-    mutationFn: async (status: string) => {
+    mutationFn: async ({ status, platform }: { status: string; platform: string | null }) => {
       if (!gameDetail) throw new Error("No game data");
       
       return apiRequest("POST", "/api/games", {
@@ -69,9 +70,10 @@ export default function GameDetail() {
         summary: gameDetail.summary,
         genres: gameDetail.genres,
         status,
+        platform: platform || null,
       });
     },
-    onSuccess: (_, status) => {
+    onSuccess: (_, { status }) => {
       toast({
         title: "Success!",
         description: `${gameDetail?.name} has been added to your ${status}.`,
@@ -188,23 +190,40 @@ export default function GameDetail() {
             </div>
 
             {!userGame ? (
-              <div className="flex items-center gap-3 flex-wrap">
-                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                  <SelectTrigger className="w-[180px]" data-testid="select-status">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="backlog">Backlog</SelectItem>
-                    <SelectItem value="playing">Playing</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="wishlist">Wishlist</SelectItem>
-                    <SelectItem value="dropped">Dropped</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                    <SelectTrigger className="w-[180px]" data-testid="select-status">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="backlog">Backlog</SelectItem>
+                      <SelectItem value="playing">Playing</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="wishlist">Wishlist</SelectItem>
+                      <SelectItem value="dropped">Dropped</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+                    <SelectTrigger className="w-[180px]" data-testid="select-platform">
+                      <SelectValue placeholder="Select platform (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PS5">PlayStation 5</SelectItem>
+                      <SelectItem value="PS4">PlayStation 4</SelectItem>
+                      <SelectItem value="Xbox Series X/S">Xbox Series X/S</SelectItem>
+                      <SelectItem value="Xbox One">Xbox One</SelectItem>
+                      <SelectItem value="Nintendo Switch">Nintendo Switch</SelectItem>
+                      <SelectItem value="PC">PC</SelectItem>
+                      <SelectItem value="Mac">Mac</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Button
-                  onClick={() => addGameMutation.mutate(selectedStatus)}
+                  onClick={() => addGameMutation.mutate({ status: selectedStatus, platform: selectedPlatform || null })}
                   disabled={addGameMutation.isPending}
                   data-testid="button-add-to-library"
+                  className="w-full sm:w-auto"
                 >
                   {addGameMutation.isPending ? (
                     <>

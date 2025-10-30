@@ -10,6 +10,27 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
+### Authentication & Platform Tracking (October 30, 2025)
+- **Replit Auth Integration:** Implemented full authentication using Replit's built-in auth system
+  - Google, GitHub, Apple, and email/password login support
+  - Session-based authentication with PostgreSQL session store
+  - Protected routes - all game operations require authentication
+  - User data stored with id, email, firstName, lastName, profileImageUrl
+  - Landing page for logged-out users showcasing app features
+- **Platform Selection:** Added platform field to games schema and UI
+  - Users can now track which platform they own each game on (PS5, Xbox, PC, Switch, etc.)
+  - Platform selector on GameDetail page alongside status selector
+  - Optional field - games can be added without specifying platform
+- **Calendar Feature:** Renamed "Events Calendar" to "Calendar" with dual functionality
+  - **Gaming Events Tab:** Fetches real gaming events from IGDB Events API
+    - Displays event name, date, description, logo, networks, and game count
+    - Livestream URLs for events (YouTube links)
+    - Handles IGDB timestamp bug (subtracts 3600 seconds)
+  - **Wishlist Releases Tab:** Shows user's wishlisted games sorted by release date
+    - Displays cover art, release date, and platform selection
+    - Helps users track upcoming games they're interested in
+- All game data now associated with authenticated user ID instead of "default-user"
+
 ### Removed Prepopulated Data (October 2025)
 - Removed all prepopulated data from New Releases, Upcoming, and Lists pages per user request
 - Pages now show empty states with helpful messages and CTAs
@@ -51,18 +72,22 @@ Preferred communication style: Simple, everyday language.
 - Custom hooks in `client/src/hooks/`
 
 **Key Features:**
+- **Authentication:** Replit Auth with Google, GitHub, Apple, email/password login
+- **Platform tracking:** Users can specify which platform they own each game on
 - Real-time game search via IGDB API integration
 - Command dialog interface for search with instant results
 - **Comprehensive game detail pages** with full metadata, screenshots, developer info, and summary
 - **Enhanced navigation flow:** Search results and library cards navigate to detail pages before adding to library
 - Game library management with status tracking (playing, completed, backlog, dropped, wishlist)
+- **Calendar with dual tabs:**
+  - Gaming Events: IGDB Events API integration with livestream links
+  - Wishlist Releases: Upcoming releases from user's wishlist
 - Multiple view types: Grid cards for games, list views for releases
 - Metacritic score integration with color-coded badges
 - Platform icon display (PS5, Xbox, Switch, PC, Mac)
+- Theme toggle between dark and light modes
 - Subscription service badges for game availability (planned)
 - Custom list creation and management (planned)
-- Events calendar for gaming announcements (planned)
-- Theme toggle between dark and light modes
 
 ### Backend Architecture
 
@@ -96,7 +121,11 @@ Preferred communication style: Simple, everyday language.
   - Extended: developers, publishers, game modes, player perspectives, themes
   - Media: screenshots (high-resolution images), video trailers
   - Story: detailed summary and storyline text
-- Two endpoints: `/api/games/search` for search results, `/api/games/igdb/:id` for detailed game info
+- Gaming events data from IGDB Events API:
+  - Event name, description, start/end times, livestream URLs
+  - Event logos, networks, and associated games
+  - Timestamp correction for IGDB API bug (-3600 seconds)
+- Three game endpoints: `/api/games/search` for search results, `/api/games/igdb/:id` for detailed game info, `/api/events` for gaming events
 
 **Development Features:**
 - Hot Module Replacement (HMR) via Vite in development
@@ -112,28 +141,45 @@ Preferred communication style: Simple, everyday language.
 - Connection via `DATABASE_URL` environment variable
 
 **Schema Design (shared/schema.ts):**
-- Users table with UUID primary keys, username, and password fields
+- Users table for Replit Auth:
+  - id (user's Replit Auth sub from JWT), email, firstName, lastName, profileImageUrl
+  - createdAt, updatedAt timestamps
+  - UpsertUser type for creating/updating users from auth claims
+- Sessions table for PostgreSQL session storage (connect-pg-simple)
 - Games table with IGDB integration:
+  - id (UUID), userId (references users)
   - igdbId: Unique IGDB game identifier
   - name, coverUrl, releaseDate (with date coercion)
-  - platforms (array), genres (array)
+  - platforms (array), platform (single selected platform - optional)
+  - genres (array)
   - metacriticScore, summary
   - status tracking (playing/completed/backlog/dropped/wishlist)
+  - addedAt timestamp
 - Drizzle Zod integration for runtime schema validation
 - Type-safe schema inference for TypeScript
-- Migration system via drizzle-kit
+- Migration system via drizzle-kit (npm run db:push)
 
 ### Authentication & Authorization
 
-**Current Implementation:**
-- Basic user schema with username/password fields
-- Storage interface includes user lookup methods
-- Session management via connect-pg-simple (PostgreSQL session store)
+**Implementation:**
+- Replit Auth integration via `server/replitAuth.ts`
+- OAuth providers: Google, GitHub, Apple, email/password
+- JWT verification using JWKS from Replit's identity provider
+- Session storage in PostgreSQL via connect-pg-simple
+- User upsert on login (creates/updates user from auth claims)
+- Protected routes via `isAuthenticated` middleware
+- Auth routes:
+  - `/api/login` - Initiates Replit Auth flow
+  - `/api/callback` - Handles OAuth callback and session creation
+  - `/api/logout` - Destroys session and clears cookies
+  - `/api/auth/user` - Returns current authenticated user
 
-**Security Considerations:**
-- Password storage prepared (implementation pending)
-- UUID-based user IDs for security
-- Session-based authentication ready for implementation
+**Security:**
+- Session-based authentication with httpOnly cookies
+- JWKS-based JWT verification
+- User ID from JWT sub claim
+- All game routes protected with isAuthenticated middleware
+- Landing page for unauthenticated users
 
 ### Game Detail Page Feature
 

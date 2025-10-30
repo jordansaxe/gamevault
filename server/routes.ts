@@ -125,6 +125,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/events", async (req, res) => {
+    try {
+      const events = await igdbService.getUpcomingEvents(50);
+      
+      const formattedEvents = events.map(event => ({
+        id: event.id,
+        name: event.name,
+        description: event.description || '',
+        startTime: new Date(event.start_time * 1000),
+        endTime: event.end_time ? new Date(event.end_time * 1000) : null,
+        liveStreamUrl: event.live_stream_url || null,
+        logoUrl: igdbService.formatCoverUrl(event.event_logo?.url, 'cover_big'),
+        networks: event.event_networks?.map(n => n.name) || [],
+        games: event.games?.map(g => g.name) || [],
+      }));
+
+      res.json(formattedEvents);
+    } catch (error) {
+      console.error('Events fetch error:', error);
+      res.status(500).json({ error: 'Failed to fetch events' });
+    }
+  });
+
   app.get("/api/games/igdb/:igdbId", async (req, res) => {
     try {
       const igdbId = parseInt(req.params.igdbId);

@@ -29,7 +29,7 @@ const mainMenuItems = [
   { title: "My Library", url: "/library", icon: Library, testId: "nav-library" },
   { title: "Wishlist", url: "/wishlist", icon: Heart, testId: "nav-wishlist" },
   { title: "Lists", url: "/lists", icon: ListPlus, testId: "nav-lists" },
-  { title: "Events Calendar", url: "/events", icon: Calendar, testId: "nav-events" },
+  { title: "Calendar", url: "/calendar", icon: Calendar, testId: "nav-calendar" },
   { title: "Subscription Services", url: "/services", icon: Tv, testId: "nav-services" },
 ];
 

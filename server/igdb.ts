@@ -38,6 +38,21 @@ interface IGDBGameDetail extends IGDBGame {
   total_rating_count?: number;
 }
 
+interface IGDBEvent {
+  id: number;
+  name: string;
+  description?: string;
+  start_time: number;
+  end_time?: number;
+  live_stream_url?: string;
+  event_logo?: {
+    id: number;
+    url: string;
+  };
+  event_networks?: Array<{ id: number; name: string }>;
+  games?: Array<{ id: number; name: string }>;
+}
+
 class IGDBService {
   private accessToken: string | null = null;
   private tokenExpiresAt: number = 0;
@@ -167,7 +182,53 @@ class IGDBService {
     if (!url) return '';
     return url.replace('t_thumb', `t_${size}`);
   }
+
+  async getUpcomingEvents(limit: number = 20): Promise<IGDBEvent[]> {
+    const token = await this.getAccessToken();
+    
+    const now = Math.floor(Date.now() / 1000);
+    
+    const body = `
+      fields name, description, start_time, end_time, live_stream_url, event_logo.url;
+      where start_time != null;
+      sort start_time asc;
+      limit ${limit};
+    `;
+
+    const response = await fetch('https://api.igdb.com/v4/events', {
+      method: 'POST',
+      headers: {
+        'Client-ID': this.clientId,
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+      },
+      body: body.trim(),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('IGDB Events API error:', errorText);
+      return [];
+    }
+
+    try {
+      const events: IGDBEvent[] = await response.json();
+      
+      return events
+        .filter(event => event.start_time && event.start_time > now)
+        .map(event => ({
+          ...event,
+          event_networks: [],
+          games: [],
+          start_time: event.start_time - 3600,
+          end_time: event.end_time ? event.end_time - 3600 : undefined,
+        }));
+    } catch (error) {
+      console.error('Failed to parse IGDB events:', error);
+      return [];
+    }
+  }
 }
 
 export const igdbService = new IGDBService();
-export type { IGDBGame, IGDBGameDetail };
+export type { IGDBGame, IGDBGameDetail, IGDBEvent };
