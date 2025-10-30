@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { subscriptionService } from "./subscriptionServices";
 
 const app = express();
 app.use(express.json());
@@ -65,7 +66,18 @@ app.use((req, res, next) => {
     port,
     host: "0.0.0.0",
     reusePort: true,
-  }, () => {
+  }, async () => {
     log(`serving on port ${port}`);
+    
+    subscriptionService.updateSubscriptionData().catch((error) => {
+      console.error('Failed to update subscription data on startup:', error);
+    });
+    
+    const ONE_DAY = 24 * 60 * 60 * 1000;
+    setInterval(() => {
+      subscriptionService.updateSubscriptionData().catch((error) => {
+        console.error('Failed to update subscription data:', error);
+      });
+    }, ONE_DAY);
   });
 })();

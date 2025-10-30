@@ -13,6 +13,21 @@ export interface IStorage {
   updateGameStatus(id: string, status: string): Promise<Game | undefined>;
   deleteGame(id: string): Promise<boolean>;
   findUserGameByIgdbId(userId: string, igdbId: number): Promise<Game | undefined>;
+  
+  // Subscription service operations
+  getAllGamesForSubscriptionUpdate(): Promise<Array<{ igdbId: number; name: string }>>;
+  updateGameSubscriptions(
+    igdbId: number,
+    subscriptions: {
+      gamePassConsole?: boolean;
+      gamePassPC?: boolean;
+      psPlus?: boolean;
+      geforceNow?: boolean;
+    }
+  ): Promise<void>;
+  
+  // HowLongToBeat operations
+  updateGamePlaytime(igdbId: number, mainStoryHours: number | null, completionistHours: number | null): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -68,6 +83,12 @@ export class MemStorage implements IStorage {
       genres: insertGame.genres ?? null,
       status: insertGame.status,
       addedAt: new Date(),
+      gamePassConsole: false,
+      gamePassPC: false,
+      psPlus: false,
+      geforceNow: false,
+      mainStoryHours: null,
+      completionistHours: null,
     };
     this.games.set(id, game);
     return game;
@@ -106,6 +127,52 @@ export class MemStorage implements IStorage {
     return Array.from(this.games.values()).find(
       (game) => game.userId === userId && game.igdbId === igdbId,
     );
+  }
+
+  async getAllGamesForSubscriptionUpdate(): Promise<Array<{ igdbId: number; name: string }>> {
+    const uniqueGames = new Map<number, string>();
+    
+    for (const game of Array.from(this.games.values())) {
+      if (!uniqueGames.has(game.igdbId)) {
+        uniqueGames.set(game.igdbId, game.name);
+      }
+    }
+    
+    return Array.from(uniqueGames.entries()).map(([igdbId, name]) => ({ igdbId, name }));
+  }
+
+  async updateGameSubscriptions(
+    igdbId: number,
+    subscriptions: {
+      gamePassConsole?: boolean;
+      gamePassPC?: boolean;
+      psPlus?: boolean;
+      geforceNow?: boolean;
+    }
+  ): Promise<void> {
+    for (const [id, game] of Array.from(this.games.entries())) {
+      if (game.igdbId === igdbId) {
+        this.games.set(id, {
+          ...game,
+          gamePassConsole: subscriptions.gamePassConsole ?? game.gamePassConsole,
+          gamePassPC: subscriptions.gamePassPC ?? game.gamePassPC,
+          psPlus: subscriptions.psPlus ?? game.psPlus,
+          geforceNow: subscriptions.geforceNow ?? game.geforceNow,
+        });
+      }
+    }
+  }
+
+  async updateGamePlaytime(igdbId: number, mainStoryHours: number | null, completionistHours: number | null): Promise<void> {
+    for (const [id, game] of Array.from(this.games.entries())) {
+      if (game.igdbId === igdbId) {
+        this.games.set(id, {
+          ...game,
+          mainStoryHours,
+          completionistHours,
+        });
+      }
+    }
   }
 }
 

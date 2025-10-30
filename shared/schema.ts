@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp, jsonb, index } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, jsonb, index, boolean, real } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -42,6 +42,14 @@ export const games = pgTable("games", {
   genres: text("genres").array(),
   status: text("status").notNull(),
   addedAt: timestamp("added_at").notNull().default(sql`now()`),
+  // Subscription service availability
+  gamePassConsole: boolean("game_pass_console").default(false),
+  gamePassPC: boolean("game_pass_pc").default(false),
+  psPlus: boolean("ps_plus").default(false),
+  geforceNow: boolean("geforce_now").default(false),
+  // HowLongToBeat playtime data (in hours)
+  mainStoryHours: real("main_story_hours"),
+  completionistHours: real("completionist_hours"),
 });
 
 export const insertGameSchema = createInsertSchema(games).omit({
