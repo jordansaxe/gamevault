@@ -1,11 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { Calendar as CalendarIcon, ExternalLink, Gamepad2 } from "lucide-react";
+import { Calendar as CalendarIcon, ExternalLink, Gamepad2, Filter } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { SubscriptionBadges } from "@/components/SubscriptionBadges";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import type { Game } from "@shared/schema";
+import { useState } from "react";
 
 interface GamingEvent {
   id: number;
@@ -20,6 +23,8 @@ interface GamingEvent {
 }
 
 export default function Calendar() {
+  const [subscriptionFilter, setSubscriptionFilter] = useState<string>("all");
+
   const { data: events, isLoading: eventsLoading } = useQuery<GamingEvent[]>({
     queryKey: ["/api/events"],
   });
@@ -29,7 +34,16 @@ export default function Calendar() {
   });
 
   const wishlistGames = userGames
-    ?.filter(game => game.status === "wishlist" && game.releaseDate)
+    ?.filter(game => {
+      if (game.status !== "wishlist" || !game.releaseDate) return false;
+      
+      if (subscriptionFilter === "all") return true;
+      if (subscriptionFilter === "gamepass") return game.gamePassConsole || game.gamePassPC;
+      if (subscriptionFilter === "psplus") return game.psPlus;
+      if (subscriptionFilter === "geforce") return game.geforceNow;
+      
+      return true;
+    })
     .sort((a, b) => {
       const dateA = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
       const dateB = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
@@ -130,6 +144,21 @@ export default function Calendar() {
         </TabsContent>
 
         <TabsContent value="wishlist" className="mt-6">
+          <div className="mb-4 flex items-center gap-3">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <Select value={subscriptionFilter} onValueChange={setSubscriptionFilter}>
+              <SelectTrigger className="w-[200px]" data-testid="select-subscription-filter">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Games</SelectItem>
+                <SelectItem value="gamepass">Game Pass</SelectItem>
+                <SelectItem value="psplus">PlayStation Plus</SelectItem>
+                <SelectItem value="geforce">GeForce NOW</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {gamesLoading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
@@ -166,11 +195,19 @@ export default function Calendar() {
                           </span>
                         </div>
                       )}
-                      {game.platform && (
-                        <Badge variant="secondary" className="text-xs">
-                          {game.platform}
-                        </Badge>
-                      )}
+                      <div className="space-y-2">
+                        {game.platform && (
+                          <Badge variant="secondary" className="text-xs">
+                            {game.platform}
+                          </Badge>
+                        )}
+                        <SubscriptionBadges 
+                          gamePassConsole={game.gamePassConsole || undefined}
+                          gamePassPC={game.gamePassPC || undefined}
+                          psPlus={game.psPlus || undefined}
+                          geforceNow={game.geforceNow || undefined}
+                        />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

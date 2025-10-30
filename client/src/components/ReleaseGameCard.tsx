@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MetacriticScore } from "./MetacriticScore";
 import { PlatformIcons } from "./PlatformIcons";
+import { SubscriptionBadges } from "./SubscriptionBadges";
 import { Calendar, Clock } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -16,6 +17,10 @@ interface ReleaseGameCardProps {
   platforms: string[];
   igdbId?: number;
   onClick?: () => void;
+  gamePassConsole?: boolean;
+  gamePassPC?: boolean;
+  psPlus?: boolean;
+  geforceNow?: boolean;
 }
 
 export function ReleaseGameCard({ 
@@ -28,7 +33,11 @@ export function ReleaseGameCard({
   metacritic, 
   platforms,
   igdbId,
-  onClick 
+  onClick,
+  gamePassConsole,
+  gamePassPC,
+  psPlus,
+  geforceNow
 }: ReleaseGameCardProps) {
   const [, setLocation] = useLocation();
 
@@ -75,6 +84,13 @@ export function ReleaseGameCard({
             {metacritic && <MetacriticScore score={metacritic} />}
             <PlatformIcons platforms={platforms} />
           </div>
+
+          <SubscriptionBadges 
+            gamePassConsole={gamePassConsole}
+            gamePassPC={gamePassPC}
+            psPlus={psPlus}
+            geforceNow={geforceNow}
+          />
 
           <Badge 
             variant={isReleased ? "default" : "secondary"}

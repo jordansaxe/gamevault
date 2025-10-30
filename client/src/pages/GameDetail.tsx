@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MetacriticScore } from "@/components/MetacriticScore";
 import { PlatformIcons } from "@/components/PlatformIcons";
-import { Calendar, Users, Gamepad2, Eye, ArrowLeft, Plus, Check } from "lucide-react";
+import { Calendar, Users, Gamepad2, Eye, ArrowLeft, Plus, Check, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -52,6 +52,11 @@ export default function GameDetail() {
 
   const { data: userGames } = useQuery<Array<{ igdbId: number; status: string }>>({
     queryKey: ["/api/games"],
+  });
+
+  const { data: playtimeData } = useQuery<{ mainStoryHours: number | null; completionistHours: number | null }>({
+    queryKey: [`/api/games/${igdbId}/playtime`],
+    enabled: !!igdbId,
   });
 
   const userGame = userGames?.find(g => g.igdbId === gameDetail?.igdbId);
@@ -292,6 +297,27 @@ export default function GameDetail() {
                     <p className="font-medium" data-testid="text-perspective">
                       {gameDetail.playerPerspectives.join(', ')}
                     </p>
+                  </div>
+                </div>
+              )}
+
+              {playtimeData && (playtimeData.mainStoryHours || playtimeData.completionistHours) && (
+                <div className="flex items-start gap-3">
+                  <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Time to Beat</p>
+                    <div className="space-y-1">
+                      {playtimeData.mainStoryHours && (
+                        <p className="font-medium text-sm" data-testid="text-main-story-hours">
+                          Main Story: {playtimeData.mainStoryHours}h
+                        </p>
+                      )}
+                      {playtimeData.completionistHours && (
+                        <p className="font-medium text-sm" data-testid="text-completionist-hours">
+                          Completionist: {playtimeData.completionistHours}h
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}

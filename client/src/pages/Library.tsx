@@ -73,6 +73,10 @@ export default function Library() {
                   metacritic={game.metacriticScore || undefined}
                   platforms={game.platforms || []}
                   igdbId={game.igdbId}
+                  gamePassConsole={game.gamePassConsole || undefined}
+                  gamePassPC={game.gamePassPC || undefined}
+                  psPlus={game.psPlus || undefined}
+                  geforceNow={game.geforceNow || undefined}
                 />
               ))}
             </div>

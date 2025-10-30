@@ -3,6 +3,7 @@ import { StatusBadge } from "./StatusBadge";
 import { ServiceBadge } from "./ServiceBadge";
 import { MetacriticScore } from "./MetacriticScore";
 import { PlatformIcons } from "./PlatformIcons";
+import { SubscriptionBadges } from "./SubscriptionBadges";
 import { Plus, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -18,6 +19,10 @@ interface GameCardProps {
   services?: Array<{ service: "ps-plus" | "game-pass" | "apple-arcade" | "geforce-now"; tier?: string }>;
   onClick?: () => void;
   igdbId?: number;
+  gamePassConsole?: boolean;
+  gamePassPC?: boolean;
+  psPlus?: boolean;
+  geforceNow?: boolean;
 }
 
 export function GameCard({ 
@@ -29,7 +34,11 @@ export function GameCard({
   platforms, 
   services,
   onClick,
-  igdbId
+  igdbId,
+  gamePassConsole,
+  gamePassPC,
+  psPlus,
+  geforceNow
 }: GameCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [, setLocation] = useLocation();
@@ -87,6 +96,13 @@ export function GameCard({
                 ))}
               </div>
             )}
+
+            <SubscriptionBadges 
+              gamePassConsole={gamePassConsole}
+              gamePassPC={gamePassPC}
+              psPlus={psPlus}
+              geforceNow={geforceNow}
+            />
 
             <div className="flex gap-1 pt-1">
               <Button 
