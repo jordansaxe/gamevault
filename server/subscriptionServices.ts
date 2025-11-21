@@ -1,4 +1,5 @@
 import { storage } from "./storage";
+import { igdbService } from "./igdb";
 
 interface GamePassGame {
   id: string;
@@ -15,6 +16,18 @@ interface GeForceNowGame {
 }
 
 export class SubscriptionService {
+  private gamePassCatalog: GamePassGame[] = [];
+  private psPlusCatalog: PSPlusGame[] = [];
+  private geforceNowCatalog: GeForceNowGame[] = [];
+  private catalogLastUpdated: Date | null = null;
+  private initializationPromise: Promise<void> | null = null;
+  private subscriptionCache: Map<number, {
+    gamePassConsole: boolean;
+    gamePassPC: boolean;
+    psPlus: boolean;
+    geforceNow: boolean;
+    cachedAt: Date;
+  }> = new Map();
   private async fetchGamePassCatalog(): Promise<GamePassGame[]> {
     try {
       const response = await fetch(
@@ -126,51 +139,117 @@ export class SubscriptionService {
     return false;
   }
 
+  async initialize(): Promise<void> {
+    if (!this.initializationPromise) {
+      this.initializationPromise = this.updateSubscriptionData();
+    }
+    return this.initializationPromise;
+  }
+
+  async ensureInitialized(): Promise<void> {
+    if (!this.catalogLastUpdated) {
+      await this.initialize();
+    }
+  }
+
   async updateSubscriptionData(): Promise<void> {
     console.log('Starting subscription catalog update...');
     const startTime = Date.now();
 
-    const [gamePassGames, psPlusGames, geforceGames] = await Promise.all([
-      this.fetchGamePassCatalog(),
-      this.fetchPSPlusCatalog(),
-      this.fetchGeForceNowCatalog(),
-    ]);
+    try {
+      const [gamePassGames, psPlusGames, geforceGames] = await Promise.all([
+        this.fetchGamePassCatalog(),
+        this.fetchPSPlusCatalog(),
+        this.fetchGeForceNowCatalog(),
+      ]);
 
-    console.log(`Fetched catalogs: Game Pass (${gamePassGames.length}), PS+ (${psPlusGames.length}), GeForce NOW (${geforceGames.length})`);
+      this.gamePassCatalog = gamePassGames;
+      this.psPlusCatalog = psPlusGames;
+      this.geforceNowCatalog = geforceGames;
+      this.catalogLastUpdated = new Date();
 
-    const allGames = await storage.getAllGamesForSubscriptionUpdate();
-    console.log(`Matching against ${allGames.length} games in database...`);
+      console.log(`Fetched catalogs: Game Pass (${gamePassGames.length}), PS+ (${psPlusGames.length}), GeForce NOW (${geforceGames.length})`);
 
-    let updateCount = 0;
-    for (const game of allGames) {
-      const gamePassConsole = gamePassGames.some(gp => 
-        this.titlesMatch(game.name, gp.title) && 
-        (!gp.supportedPlatforms || gp.supportedPlatforms.some(p => p.toLowerCase().includes('console')))
-      );
-      
-      const gamePassPC = gamePassGames.some(gp => 
-        this.titlesMatch(game.name, gp.title) && 
-        (!gp.supportedPlatforms || gp.supportedPlatforms.some(p => p.toLowerCase().includes('pc')))
-      );
-      
-      const psPlus = psPlusGames.some(ps => this.titlesMatch(game.name, ps.title));
-      
-      const geforceNow = geforceGames.some(gfn => this.titlesMatch(game.name, gfn.title));
+      const allGames = await storage.getAllGamesForSubscriptionUpdate();
+      console.log(`Matching against ${allGames.length} games in database...`);
 
-      await storage.updateGameSubscriptions(game.igdbId, {
-        gamePassConsole,
-        gamePassPC,
-        psPlus,
-        geforceNow,
-      });
-      
-      if (gamePassConsole || gamePassPC || psPlus || geforceNow) {
-        updateCount++;
+      let updateCount = 0;
+      for (const game of allGames) {
+        const subscriptions = this.checkGameSubscriptions(game.name);
+
+        await storage.updateGameSubscriptions(game.igdbId, subscriptions);
+        
+        if (subscriptions.gamePassConsole || subscriptions.gamePassPC || subscriptions.psPlus || subscriptions.geforceNow) {
+          updateCount++;
+        }
+      }
+
+      const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+      console.log(`✓ Subscription update complete: ${updateCount} games matched in ${duration}s`);
+    } catch (error) {
+      console.error('Failed to update subscription data:', error);
+      this.initializationPromise = null;
+      throw error;
+    }
+  }
+
+  checkGameSubscriptions(gameName: string): {
+    gamePassConsole: boolean;
+    gamePassPC: boolean;
+    psPlus: boolean;
+    geforceNow: boolean;
+  } {
+    const gamePassConsole = this.gamePassCatalog.some(gp => 
+      this.titlesMatch(gameName, gp.title) && 
+      (!gp.supportedPlatforms || gp.supportedPlatforms.some(p => p.toLowerCase().includes('console')))
+    );
+    
+    const gamePassPC = this.gamePassCatalog.some(gp => 
+      this.titlesMatch(gameName, gp.title) && 
+      (!gp.supportedPlatforms || gp.supportedPlatforms.some(p => p.toLowerCase().includes('pc')))
+    );
+    
+    const psPlus = this.psPlusCatalog.some(ps => this.titlesMatch(gameName, ps.title));
+    
+    const geforceNow = this.geforceNowCatalog.some(gfn => this.titlesMatch(gameName, gfn.title));
+
+    return {
+      gamePassConsole,
+      gamePassPC,
+      psPlus,
+      geforceNow,
+    };
+  }
+
+  async checkGameSubscriptionsById(igdbId: number, gameName: string): Promise<{
+    gamePassConsole: boolean;
+    gamePassPC: boolean;
+    psPlus: boolean;
+    geforceNow: boolean;
+  }> {
+    await this.ensureInitialized();
+
+    const cached = this.subscriptionCache.get(igdbId);
+    if (cached) {
+      const cacheAge = Date.now() - cached.cachedAt.getTime();
+      if (cacheAge < 24 * 60 * 60 * 1000) {
+        return {
+          gamePassConsole: cached.gamePassConsole,
+          gamePassPC: cached.gamePassPC,
+          psPlus: cached.psPlus,
+          geforceNow: cached.geforceNow,
+        };
       }
     }
 
-    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-    console.log(`✓ Subscription update complete: ${updateCount} games matched in ${duration}s`);
+    const subscriptions = this.checkGameSubscriptions(gameName);
+    
+    this.subscriptionCache.set(igdbId, {
+      ...subscriptions,
+      cachedAt: new Date(),
+    });
+
+    return subscriptions;
   }
 }
 

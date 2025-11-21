@@ -61,3 +61,16 @@ export const insertGameSchema = createInsertSchema(games).omit({
 
 export type InsertGame = z.infer<typeof insertGameSchema>;
 export type Game = typeof games.$inferSelect;
+
+// Global subscription catalog - tracks which games are on subscription services
+export const subscriptionCatalog = pgTable("subscription_catalog", {
+  igdbId: integer("igdb_id").primaryKey(),
+  name: text("name").notNull(),
+  gamePassConsole: boolean("game_pass_console").default(false),
+  gamePassPC: boolean("game_pass_pc").default(false),
+  psPlus: boolean("ps_plus").default(false),
+  geforceNow: boolean("geforce_now").default(false),
+  lastUpdated: timestamp("last_updated").notNull().default(sql`now()`),
+});
+
+export type SubscriptionCatalogEntry = typeof subscriptionCatalog.$inferSelect;

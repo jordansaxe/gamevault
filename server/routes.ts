@@ -5,6 +5,7 @@ import { igdbService } from "./igdb";
 import { insertGameSchema } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { hltbService } from "./hltbService";
+import { subscriptionService } from "./subscriptionServices";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup Replit Auth
@@ -220,6 +221,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Get playtime error:', error);
       res.status(500).json({ error: 'Failed to get playtime data' });
+    }
+  });
+
+  app.get("/api/games/:igdbId/subscriptions", async (req, res) => {
+    try {
+      const igdbId = parseInt(req.params.igdbId);
+      
+      if (isNaN(igdbId)) {
+        return res.status(400).json({ error: 'Invalid game ID' });
+      }
+
+      const gameDetails = await igdbService.getGameDetails(igdbId);
+      
+      if (!gameDetails) {
+        return res.status(404).json({ error: 'Game not found' });
+      }
+
+      const subscriptions = await subscriptionService.checkGameSubscriptionsById(igdbId, gameDetails.name);
+
+      res.json(subscriptions);
+    } catch (error) {
+      console.error('Get subscription error:', error);
+      res.status(500).json({ error: 'Failed to get subscription data' });
     }
   });
 

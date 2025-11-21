@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MetacriticScore } from "@/components/MetacriticScore";
 import { PlatformIcons } from "@/components/PlatformIcons";
+import { SubscriptionBadges } from "@/components/SubscriptionBadges";
 import { Calendar, Users, Gamepad2, Eye, ArrowLeft, Plus, Check, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -56,6 +57,16 @@ export default function GameDetail() {
 
   const { data: playtimeData } = useQuery<{ mainStoryHours: number | null; completionistHours: number | null }>({
     queryKey: [`/api/games/${igdbId}/playtime`],
+    enabled: !!igdbId,
+  });
+
+  const { data: subscriptionData } = useQuery<{
+    gamePassConsole: boolean;
+    gamePassPC: boolean;
+    psPlus: boolean;
+    geforceNow: boolean;
+  }>({
+    queryKey: [`/api/games/${igdbId}/subscriptions`],
     enabled: !!igdbId,
   });
 
@@ -192,6 +203,17 @@ export default function GameDetail() {
                   </Badge>
                 ))}
               </div>
+
+              {subscriptionData && (
+                <div className="mb-4">
+                  <SubscriptionBadges
+                    gamePassConsole={subscriptionData.gamePassConsole}
+                    gamePassPC={subscriptionData.gamePassPC}
+                    psPlus={subscriptionData.psPlus}
+                    geforceNow={subscriptionData.geforceNow}
+                  />
+                </div>
+              )}
             </div>
 
             {!userGame ? (

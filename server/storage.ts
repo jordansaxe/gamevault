@@ -1,4 +1,4 @@
-import { type User, type UpsertUser, type Game, type InsertGame } from "@shared/schema";
+import { type User, type UpsertUser, type Game, type InsertGame, type SubscriptionCatalogEntry } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -28,15 +28,29 @@ export interface IStorage {
   
   // HowLongToBeat operations
   updateGamePlaytime(igdbId: number, mainStoryHours: number | null, completionistHours: number | null): Promise<void>;
+  
+  // Subscription catalog operations
+  upsertSubscriptionCatalogEntry(entry: {
+    igdbId: number;
+    name: string;
+    gamePassConsole?: boolean;
+    gamePassPC?: boolean;
+    psPlus?: boolean;
+    geforceNow?: boolean;
+  }): Promise<void>;
+  getSubscriptionCatalogEntry(igdbId: number): Promise<SubscriptionCatalogEntry | undefined>;
+  clearSubscriptionCatalog(): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private games: Map<string, Game>;
+  private subscriptionCatalog: Map<number, SubscriptionCatalogEntry>;
 
   constructor() {
     this.users = new Map();
     this.games = new Map();
+    this.subscriptionCatalog = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -173,6 +187,35 @@ export class MemStorage implements IStorage {
         });
       }
     }
+  }
+
+  async upsertSubscriptionCatalogEntry(entry: {
+    igdbId: number;
+    name: string;
+    gamePassConsole?: boolean;
+    gamePassPC?: boolean;
+    psPlus?: boolean;
+    geforceNow?: boolean;
+  }): Promise<void> {
+    const existing = this.subscriptionCatalog.get(entry.igdbId);
+    const catalogEntry: SubscriptionCatalogEntry = {
+      igdbId: entry.igdbId,
+      name: entry.name,
+      gamePassConsole: entry.gamePassConsole ?? false,
+      gamePassPC: entry.gamePassPC ?? false,
+      psPlus: entry.psPlus ?? false,
+      geforceNow: entry.geforceNow ?? false,
+      lastUpdated: new Date(),
+    };
+    this.subscriptionCatalog.set(entry.igdbId, catalogEntry);
+  }
+
+  async getSubscriptionCatalogEntry(igdbId: number): Promise<SubscriptionCatalogEntry | undefined> {
+    return this.subscriptionCatalog.get(igdbId);
+  }
+
+  async clearSubscriptionCatalog(): Promise<void> {
+    this.subscriptionCatalog.clear();
   }
 }
 
