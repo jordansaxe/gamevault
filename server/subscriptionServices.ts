@@ -30,7 +30,7 @@ export class SubscriptionService {
   }> = new Map();
   private async fetchGamePassCatalog(): Promise<GamePassGame[]> {
     try {
-      const response = await fetch(
+      const siglsResponse = await fetch(
         'https://catalog.gamepass.com/sigls/v2?id=fdd9e2a7-0fee-49f6-ad69-4354098401ff&language=en-us&market=US',
         {
           headers: {
@@ -39,13 +39,64 @@ export class SubscriptionService {
         }
       );
 
-      if (!response.ok) {
-        console.error('Game Pass API error:', response.statusText);
+      if (!siglsResponse.ok) {
+        console.error('Game Pass API error:', siglsResponse.statusText);
         return [];
       }
 
-      const data = await response.json();
-      return data || [];
+      const siglsData = await siglsResponse.json();
+      const productIds = siglsData
+        .filter((item: any) => item.id && item.id !== 'fdd9e2a7-0fee-49f6-ad69-4354098401ff')
+        .map((item: any) => item.id)
+        .slice(0, 500);
+
+      if (productIds.length === 0) {
+        console.log('No product IDs found in Game Pass catalog');
+        return [];
+      }
+
+      const productsResponse = await fetch(
+        `https://displaycatalog.mp.microsoft.com/v7.0/products?market=US&languages=en-us&bigIds=${productIds.join(',')}`,
+        {
+          headers: {
+            'Accept': 'application/json',
+          },
+        }
+      );
+
+      if (!productsResponse.ok) {
+        console.error('Game Pass products API error:', productsResponse.statusText);
+        return [];
+      }
+
+      const productsData = await productsResponse.json();
+      const games: GamePassGame[] = [];
+
+      for (const product of productsData.Products || []) {
+        const title = product.LocalizedProperties?.[0]?.ProductTitle;
+        if (!title) continue;
+
+        const platforms: string[] = [];
+        const packagePlatforms = product.Properties?.PackagePlatforms || [];
+        
+        for (const platform of packagePlatforms) {
+          if (platform.includes('Xbox') || platform.includes('Scarlett') || platform.includes('XboxOne')) {
+            platforms.push('console');
+          }
+          if (platform.includes('Windows') || platform.includes('PC')) {
+            platforms.push('pc');
+          }
+        }
+
+        games.push({
+          id: product.ProductId,
+          title,
+          supportedPlatforms: platforms.length > 0 ? platforms : undefined,
+        });
+      }
+
+      console.log(`Fetched ${games.length} Game Pass games with metadata`);
+      return games;
     } catch (error) {
       console.error('Failed to fetch Game Pass catalog:', error);
       return [];
@@ -126,6 +177,8 @@ export class SubscriptionService {
   private titlesMatch(title1: string, title2: string): boolean {
     const norm1 = this.normalizeTitle(title1);
     const norm2 = this.normalizeTitle(title2);
+    
+    if (!norm1 || !norm2) return false;
     
     if (norm1 === norm2) return true;
     

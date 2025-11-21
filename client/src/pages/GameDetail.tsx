@@ -70,6 +70,52 @@ export default function GameDetail() {
     enabled: !!igdbId,
   });
 
+  const platformMapping: Record<string, string> = {
+    'PlayStation 5': 'PlayStation 5',
+    'PlayStation 4': 'PlayStation 4',
+    'PlayStation 3': 'PlayStation 3',
+    'PlayStation 2': 'PlayStation 2',
+    'Xbox Series X|S': 'Xbox Series X/S',
+    'Xbox One': 'Xbox One',
+    'Xbox 360': 'Xbox 360',
+    'Nintendo Switch': 'Nintendo Switch',
+    'Wii U': 'Wii U',
+    'Wii': 'Wii',
+    'PC (Microsoft Windows)': 'PC',
+    'Mac': 'Mac',
+    'Linux': 'Linux',
+    'Android': 'Android',
+    'iOS': 'iOS',
+  };
+
+  const platformLabelMapping: Record<string, string> = {
+    'PlayStation 5': 'PlayStation 5',
+    'PlayStation 4': 'PlayStation 4',
+    'PlayStation 3': 'PlayStation 3',
+    'PlayStation 2': 'PlayStation 2',
+    'Xbox Series X/S': 'Xbox Series X/S',
+    'Xbox One': 'Xbox One',
+    'Xbox 360': 'Xbox 360',
+    'Nintendo Switch': 'Nintendo Switch',
+    'Wii U': 'Wii U',
+    'Wii': 'Wii',
+    'PC': 'PC',
+    'Mac': 'Mac',
+    'Linux': 'Linux',
+    'Android': 'Android',
+    'iOS': 'iOS',
+  };
+
+  const defaultPlatforms = ['PlayStation 5', 'PlayStation 4', 'Xbox Series X/S', 'Xbox One', 'Nintendo Switch', 'PC', 'Mac'];
+
+  const availablePlatformsFromIGDB = gameDetail?.platforms
+    .map(platform => platformMapping[platform] || platform)
+    .filter((value, index, self) => self.indexOf(value) === index) || [];
+
+  const platformOptions = availablePlatformsFromIGDB.length > 0 
+    ? availablePlatformsFromIGDB 
+    : defaultPlatforms;
+
   const userGame = userGames?.find(g => g.igdbId === gameDetail?.igdbId);
 
   const addGameMutation = useMutation({
@@ -236,13 +282,11 @@ export default function GameDetail() {
                       <SelectValue placeholder="Select platform (optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="PS5">PlayStation 5</SelectItem>
-                      <SelectItem value="PS4">PlayStation 4</SelectItem>
-                      <SelectItem value="Xbox Series X/S">Xbox Series X/S</SelectItem>
-                      <SelectItem value="Xbox One">Xbox One</SelectItem>
-                      <SelectItem value="Nintendo Switch">Nintendo Switch</SelectItem>
-                      <SelectItem value="PC">PC</SelectItem>
-                      <SelectItem value="Mac">Mac</SelectItem>
+                      {platformOptions.map(platform => (
+                        <SelectItem key={platform} value={platform}>
+                          {platformLabelMapping[platform] || platform}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
