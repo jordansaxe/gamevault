@@ -114,7 +114,8 @@ export class SubscriptionService {
     }
   }
 
-  private normalizeTitle(title: string): string {
+  private normalizeTitle(title: string | undefined | null): string {
+    if (!title) return '';
     return title
       .toLowerCase()
       .replace(/[^\w\s]/g, '')
@@ -201,12 +202,12 @@ export class SubscriptionService {
   } {
     const gamePassConsole = this.gamePassCatalog.some(gp => 
       this.titlesMatch(gameName, gp.title) && 
-      (!gp.supportedPlatforms || gp.supportedPlatforms.some(p => p.toLowerCase().includes('console')))
+      (!gp.supportedPlatforms || gp.supportedPlatforms.some(p => p?.toLowerCase().includes('console')))
     );
     
     const gamePassPC = this.gamePassCatalog.some(gp => 
       this.titlesMatch(gameName, gp.title) && 
-      (!gp.supportedPlatforms || gp.supportedPlatforms.some(p => p.toLowerCase().includes('pc')))
+      (!gp.supportedPlatforms || gp.supportedPlatforms.some(p => p?.toLowerCase().includes('pc')))
     );
     
     const psPlus = this.psPlusCatalog.some(ps => this.titlesMatch(gameName, ps.title));
