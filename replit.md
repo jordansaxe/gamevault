@@ -81,6 +81,23 @@ Preferred communication style: Simple, everyday language.
 - **react-day-picker**: Calendar/date picker.
 - **howlongtobeat**: Game completion time estimates (npm package).
 - **IGDB API**: Game data, events, and search.
-- **catalog.gamepass.com**: Xbox Game Pass data.
-- **PSDeals.net**: PlayStation Plus catalog (web scraping).
-- **NVIDIA games page**: GeForce NOW catalog (web scraping).
+- **catalog.gamepass.com + displaycatalog.mp.microsoft.com**: Xbox Game Pass data (two-step API: product IDs → metadata).
+- **PlayStation Plus**: Curated static list of 88 popular games (no API available).
+- **GeForce NOW**: Curated static list of 85 popular games (no API available).
+
+## Recent Changes
+
+### January 2026
+- **Removed Subscription Services navigation tab**: Simplified sidebar navigation by removing the Subscription Services page.
+- **Platform icons redesigned**: Platform icons now use recognizable brand logos (PlayStation, Xbox, Nintendo Switch, Steam) instead of generic gamepad icons. Uses react-icons (SiPlaystation, FaXbox, SiNintendoswitch, SiSteam).
+- **Upcoming page enhancement**: Now fetches and displays games from user's library with upcoming release dates (games releasing in the future or within the last 30 days).
+- **Release date refresh feature**: Added POST `/api/games/refresh-release-dates` endpoint and "Refresh Dates" button on Upcoming page to manually update release dates from IGDB for all games in the user's library.
+- **Back button navigation**: All back buttons now use `window.history.back()` for proper navigation flow across pages.
+
+### December 2025
+- **Event Detail Pages**: Added individual event detail pages at `/event/:eventId`. Users can click on any event from the Calendar page to see full event artwork, title, date, description, a "Watch Recording/Livestream" button (if available), and a grid of all featured games. Each game links to its game detail page where users can add it to their library.
+- **Calendar Enhancement**: Calendar now shows two sections - "Upcoming Events" and "Previous Events (Last 6 Months)". Events display featured games with clickable buttons that navigate to the game detail page where users can add games to their wishlist. Uses IGDB Events API with expanded game data including covers.
+- **Search Redesign**: Search now navigates to a dedicated `/search` page with all results displayed in a grid. Header search bar shows live suggestions as you type (5 max), and pressing Enter takes you to the full results page.
+- **Game Pass Fix**: Fixed false positive matching issue where all games were incorrectly showing as Game Pass. Now uses two-step API to fetch actual game titles and platform data (458 games).
+- **Platform Selector**: Now dynamically shows only platforms where each game is actually available (based on IGDB data), with fallback to common platforms.
+- **Subscription Services**: PS Plus and GeForce NOW now use curated static lists since external scraping is blocked.

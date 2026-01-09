@@ -8,6 +8,13 @@ import { hltbService } from "./hltbService";
 import { subscriptionService } from "./subscriptionServices";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // In local dev mode, add a simple redirect for /api/login
+  if (!process.env.REPL_ID || !process.env.DATABASE_URL) {
+    app.get('/api/login', (_req, res) => {
+      res.redirect('/');
+    });
+  }
+
   // Setup Replit Auth
   await setupAuth(app);
 
@@ -15,6 +22,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+
+      // In local dev mode, create/return mock user
+      if (!process.env.REPL_ID || !process.env.DATABASE_URL) {
+        let user = await storage.getUser(userId);
+        if (!user) {
+          user = await storage.upsertUser({
+            id: userId,
+            email: req.user.claims.email,
+            firstName: req.user.claims.first_name,
+            lastName: req.user.claims.last_name,
+            profileImageUrl: null,
+          });
+        }
+        return res.json(user);
+      }
+
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
@@ -140,13 +163,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
         liveStreamUrl: event.live_stream_url || null,
         logoUrl: igdbService.formatCoverUrl(event.event_logo?.url, 'cover_big'),
         networks: event.event_networks?.map(n => n.name) || [],
-        games: event.games?.map(g => g.name) || [],
+        games: event.games?.map(g => ({
+          id: g.id,
+          name: g.name,
+          coverUrl: igdbService.formatCoverUrl(g.cover?.url, 'cover_small'),
+        })) || [],
       }));
 
       res.json(formattedEvents);
     } catch (error) {
       console.error('Events fetch error:', error);
       res.status(500).json({ error: 'Failed to fetch events' });
+    }
+  });
+
+  app.get("/api/events/past", async (req, res) => {
+    try {
+      const events = await igdbService.getPastEvents(50);
+      
+      const formattedEvents = events.map(event => ({
+        id: event.id,
+        name: event.name,
+        description: event.description || '',
+        startTime: new Date(event.start_time * 1000),
+        endTime: event.end_time ? new Date(event.end_time * 1000) : null,
+        liveStreamUrl: event.live_stream_url || null,
+        logoUrl: igdbService.formatCoverUrl(event.event_logo?.url, 'cover_big'),
+        networks: event.event_networks?.map(n => n.name) || [],
+        games: event.games?.map(g => ({
+          id: g.id,
+          name: g.name,
+          coverUrl: igdbService.formatCoverUrl(g.cover?.url, 'cover_small'),
+        })) || [],
+      }));
+
+      res.json(formattedEvents);
+    } catch (error) {
+      console.error('Past events fetch error:', error);
+      res.status(500).json({ error: 'Failed to fetch past events' });
+    }
+  });
+
+  app.get("/api/events/:eventId", async (req, res) => {
+    try {
+      const eventId = parseInt(req.params.eventId);
+      
+      if (isNaN(eventId)) {
+        return res.status(400).json({ error: 'Invalid event ID' });
+      }
+
+      const event = await igdbService.getEventById(eventId);
+      
+      if (!event) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+
+      const formattedEvent = {
+        id: event.id,
+        name: event.name,
+        description: event.description || '',
+        startTime: new Date(event.start_time * 1000),
+        endTime: event.end_time ? new Date(event.end_time * 1000) : null,
+        liveStreamUrl: event.live_stream_url || null,
+        logoUrl: igdbService.formatCoverUrl(event.event_logo?.url, 'cover_big'),
+        networks: event.event_networks?.map(n => n.name) || [],
+        games: event.games?.map(g => ({
+          id: g.id,
+          name: g.name,
+          coverUrl: igdbService.formatCoverUrl(g.cover?.url, 'cover_big'),
+          summary: g.summary || '',
+          releaseDate: g.first_release_date ? new Date(g.first_release_date * 1000) : null,
+          platforms: g.platforms?.map(p => p.name) || [],
+          genres: g.genres?.map(gen => gen.name) || [],
+        })) || [],
+      };
+
+      res.json(formattedEvent);
+    } catch (error) {
+      console.error('Event fetch error:', error);
+      res.status(500).json({ error: 'Failed to fetch event' });
     }
   });
 
@@ -244,6 +339,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Get subscription error:', error);
       res.status(500).json({ error: 'Failed to get subscription data' });
+    }
+  });
+
+  app.post("/api/games/refresh-release-dates", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const userGames = await storage.getUserGames(userId);
+      
+      const uniqueIgdbIds = Array.from(new Set(userGames.map(g => g.igdbId)));
+      
+      let updatedCount = 0;
+      const errors: string[] = [];
+      
+      for (const igdbId of uniqueIgdbIds) {
+        try {
+          const gameDetails = await igdbService.getGameDetails(igdbId);
+          
+          if (gameDetails && gameDetails.first_release_date) {
+            const releaseDate = new Date(gameDetails.first_release_date * 1000);
+            await storage.updateGameReleaseDate(igdbId, releaseDate);
+            updatedCount++;
+          }
+        } catch (error) {
+          errors.push(`Failed to update game ${igdbId}`);
+        }
+      }
+      
+      res.json({ 
+        success: true, 
+        updatedCount, 
+        totalGames: uniqueIgdbIds.length,
+        errors: errors.length > 0 ? errors : undefined
+      });
+    } catch (error) {
+      console.error('Refresh release dates error:', error);
+      res.status(500).json({ error: 'Failed to refresh release dates' });
     }
   });
 

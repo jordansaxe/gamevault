@@ -29,6 +29,10 @@ export interface IStorage {
   // HowLongToBeat operations
   updateGamePlaytime(igdbId: number, mainStoryHours: number | null, completionistHours: number | null): Promise<void>;
   
+  // Release date operations
+  updateGameReleaseDate(igdbId: number, releaseDate: Date | null): Promise<void>;
+  getAllGamesWithIgdbIds(): Promise<Array<{ id: string; igdbId: number; name: string }>>;
+  
   // Subscription catalog operations
   upsertSubscriptionCatalogEntry(entry: {
     igdbId: number;
@@ -187,6 +191,29 @@ export class MemStorage implements IStorage {
         });
       }
     }
+  }
+
+  async updateGameReleaseDate(igdbId: number, releaseDate: Date | null): Promise<void> {
+    for (const [id, game] of Array.from(this.games.entries())) {
+      if (game.igdbId === igdbId) {
+        this.games.set(id, {
+          ...game,
+          releaseDate,
+        });
+      }
+    }
+  }
+
+  async getAllGamesWithIgdbIds(): Promise<Array<{ id: string; igdbId: number; name: string }>> {
+    const uniqueGames = new Map<number, { id: string; igdbId: number; name: string }>();
+    
+    for (const game of Array.from(this.games.values())) {
+      if (!uniqueGames.has(game.igdbId)) {
+        uniqueGames.set(game.igdbId, { id: game.id, igdbId: game.igdbId, name: game.name });
+      }
+    }
+    
+    return Array.from(uniqueGames.values());
   }
 
   async upsertSubscriptionCatalogEntry(entry: {

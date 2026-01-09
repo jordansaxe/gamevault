@@ -208,7 +208,7 @@ export default function GameDetail() {
         <div className="absolute top-4 left-4">
           <Button
             variant="outline"
-            onClick={() => setLocation("/library")}
+            onClick={() => window.history.back()}
             className="bg-background/80 backdrop-blur-sm"
             data-testid="button-back"
           >

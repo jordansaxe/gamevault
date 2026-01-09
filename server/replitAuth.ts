@@ -63,6 +63,12 @@ async function upsertUser(
 }
 
 export async function setupAuth(app: Express) {
+  // Skip auth setup if required env vars are missing (local dev mode)
+  if (!process.env.REPL_ID || !process.env.DATABASE_URL) {
+    console.log("⚠️  Running without authentication (local dev mode)");
+    return;
+  }
+
   app.set("trust proxy", 1);
   app.use(getSession());
   app.use(passport.initialize());
@@ -133,6 +139,20 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
+  // Skip auth check in local dev mode
+  if (!process.env.REPL_ID || !process.env.DATABASE_URL) {
+    // Create a mock user for local development
+    (req as any).user = {
+      claims: {
+        sub: 'local-dev-user',
+        email: 'dev@localhost',
+        first_name: 'Local',
+        last_name: 'Dev'
+      }
+    };
+    return next();
+  }
+
   const user = req.user as any;
 
   if (!req.isAuthenticated() || !user.expires_at) {

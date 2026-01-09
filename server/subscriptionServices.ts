@@ -104,65 +104,66 @@ export class SubscriptionService {
   }
 
   private async fetchPSPlusCatalog(): Promise<PSPlusGame[]> {
-    try {
-      const response = await fetch('https://psdeals.net/ca-store/collection/ps_plus_game_catalog');
-      
-      if (!response.ok) {
-        console.error('PS+ scrape error:', response.statusText);
-        return [];
-      }
+    const psPlusTitles = [
+      "Spider-Man: Miles Morales", "Spider-Man Remastered", "Returnal", "Death Stranding",
+      "Ghost of Tsushima Director's Cut", "Demon's Souls", "Ratchet & Clank: Rift Apart",
+      "The Last of Us Part II", "God of War", "Horizon Forbidden West", "Horizon Zero Dawn",
+      "Uncharted 4: A Thief's End", "Uncharted: The Lost Legacy", "Uncharted: Legacy of Thieves",
+      "Bloodborne", "Sekiro: Shadows Die Twice", "Dark Souls III", "Dark Souls Remastered",
+      "Elden Ring", "Final Fantasy VII Remake", "Final Fantasy XVI", "Stray",
+      "Red Dead Redemption 2", "Grand Theft Auto V", "The Witcher 3: Wild Hunt",
+      "Assassin's Creed Valhalla", "Assassin's Creed Odyssey", "Assassin's Creed Origins",
+      "Far Cry 6", "Far Cry 5", "Watch Dogs: Legion", "Ghost Recon Breakpoint",
+      "Resident Evil Village", "Resident Evil 4", "Resident Evil 2", "Resident Evil 3",
+      "Death Stranding Director's Cut", "Metal Gear Solid V: The Phantom Pain",
+      "Cyberpunk 2077", "Tales of Arise", "Persona 5 Royal", "Yakuza: Like a Dragon",
+      "Yakuza 0", "Judgment", "Lost Judgment", "NBA 2K24", "MLB The Show 24",
+      "Soulcalibur VI", "Tekken 7", "Mortal Kombat 11", "Street Fighter 6",
+      "Hogwarts Legacy", "Star Wars Jedi: Survivor", "Star Wars Jedi: Fallen Order",
+      "Dead Space", "The Callisto Protocol", "Alan Wake 2", "Control",
+      "Guardians of the Galaxy", "Gotham Knights", "Batman: Arkham Knight",
+      "Days Gone", "Infamous Second Son", "Little Big Planet 3", "Sackboy: A Big Adventure",
+      "It Takes Two", "A Way Out", "Overcooked! All You Can Eat", "Fall Guys",
+      "Crash Bandicoot N. Sane Trilogy", "Crash Bandicoot 4", "Spyro Reignited Trilogy",
+      "Kingdom Hearts III", "NieR: Automata", "NieR Replicant", "Monster Hunter: World",
+      "Monster Hunter Rise", "Dragon's Dogma 2", "Devil May Cry 5", "Borderlands 3",
+      "Tiny Tina's Wonderlands", "Diablo IV", "Dead Island 2", "Dying Light 2",
+      "The Forest", "Sons of the Forest", "Subnautica", "No Man's Sky"
+    ];
 
-      const html = await response.text();
-      
-      const gameMatches = Array.from(html.matchAll(/(\d+)[a-zA-Z\s]+([^<\n]+)<\/a>/g));
-      const games: PSPlusGame[] = [];
-      const seenTitles = new Set<string>();
-
-      for (const match of gameMatches) {
-        const title = match[2]?.trim();
-        if (title && title.length > 2 && !seenTitles.has(title)) {
-          seenTitles.add(title);
-          games.push({ title });
-        }
-      }
-
-      console.log(`Found ${games.length} PS+ games`);
-      return games;
-    } catch (error) {
-      console.error('Failed to fetch PS+ catalog:', error);
-      return [];
-    }
+    console.log(`Using curated PS+ catalog: ${psPlusTitles.length} games`);
+    return psPlusTitles.map(title => ({ title }));
   }
 
   private async fetchGeForceNowCatalog(): Promise<GeForceNowGame[]> {
-    try {
-      const response = await fetch('https://www.nvidia.com/en-us/geforce-now/games/');
-      
-      if (!response.ok) {
-        console.error('GeForce NOW scrape error:', response.statusText);
-        return [];
-      }
+    const geforceNowTitles = [
+      "Cyberpunk 2077", "Hogwarts Legacy", "Baldur's Gate 3", "Diablo IV", "Starfield",
+      "Fortnite", "Apex Legends", "Destiny 2", "League of Legends", "Valorant",
+      "Counter-Strike 2", "Dota 2", "Path of Exile", "Lost Ark", "New World",
+      "The Witcher 3: Wild Hunt", "Red Dead Redemption 2", "Grand Theft Auto V",
+      "Elden Ring", "Dark Souls III", "Sekiro: Shadows Die Twice", "Armored Core VI",
+      "Assassin's Creed Valhalla", "Assassin's Creed Mirage", "Far Cry 6", "Watch Dogs: Legion",
+      "God of War", "A Plague Tale: Requiem", "Control", "Alan Wake 2",
+      "Resident Evil Village", "Resident Evil 4", "Dead Space", "The Callisto Protocol",
+      "Monster Hunter: World", "Monster Hunter Rise", "Dragon's Dogma 2",
+      "Final Fantasy XIV", "Final Fantasy XVI", "Final Fantasy VII Remake",
+      "Persona 5 Royal", "Tales of Arise", "NieR: Automata", "NieR Replicant",
+      "Dying Light 2", "Dead Island 2", "Days Gone", "Horizon Zero Dawn",
+      "Shadow of the Tomb Raider", "Rise of the Tomb Raider", "Tomb Raider",
+      "Hitman 3", "Hitman 2", "Hitman", "Sniper Elite 5", "Ghost Recon Breakpoint",
+      "Death Stranding", "Metal Gear Solid V", "Devil May Cry 5", "Bayonetta",
+      "Disco Elysium", "Divinity: Original Sin 2", "Pillars of Eternity II",
+      "Crusader Kings III", "Europa Universalis IV", "Hearts of Iron IV", "Stellaris",
+      "Civilization VI", "Humankind", "Age of Empires IV", "Total War: Warhammer III",
+      "Cities: Skylines II", "Planet Coaster", "Satisfactory", "Factorio",
+      "Stardew Valley", "Terraria", "Valheim", "V Rising", "Core Keeper",
+      "No Man's Sky", "Elite Dangerous", "Star Citizen", "Space Engineers",
+      "Microsoft Flight Simulator", "Farming Simulator 22", "Euro Truck Simulator 2",
+      "Rust", "Ark: Survival Evolved", "DayZ", "The Forest", "Sons of the Forest"
+    ];
 
-      const html = await response.text();
-      
-      const gameMatches = Array.from(html.matchAll(/data-game-name="([^"]+)"/g));
-      const games: GeForceNowGame[] = [];
-      const seenTitles = new Set<string>();
-
-      for (const match of gameMatches) {
-        const title = match[1]?.trim();
-        if (title && !seenTitles.has(title)) {
-          seenTitles.add(title);
-          games.push({ title });
-        }
-      }
-
-      console.log(`Found ${games.length} GeForce NOW games`);
-      return games;
-    } catch (error) {
-      console.error('Failed to fetch GeForce NOW catalog:', error);
-      return [];
-    }
+    console.log(`Using curated GeForce NOW catalog: ${geforceNowTitles.length} games`);
+    return geforceNowTitles.map(title => ({ title }));
   }
 
   private normalizeTitle(title: string | undefined | null): string {

@@ -38,6 +38,16 @@ interface IGDBGameDetail extends IGDBGame {
   total_rating_count?: number;
 }
 
+interface IGDBEventGame {
+  id: number;
+  name: string;
+  cover?: { id: number; url: string };
+  summary?: string;
+  first_release_date?: number;
+  platforms?: Array<{ id: number; name: string }>;
+  genres?: Array<{ id: number; name: string }>;
+}
+
 interface IGDBEvent {
   id: number;
   name: string;
@@ -50,7 +60,7 @@ interface IGDBEvent {
     url: string;
   };
   event_networks?: Array<{ id: number; name: string }>;
-  games?: Array<{ id: number; name: string }>;
+  games?: IGDBEventGame[];
 }
 
 class IGDBService {
@@ -189,8 +199,8 @@ class IGDBService {
     const now = Math.floor(Date.now() / 1000);
     
     const body = `
-      fields name, description, start_time, end_time, live_stream_url, event_logo.url;
-      where start_time != null;
+      fields name, description, start_time, end_time, live_stream_url, event_logo.url, games.id, games.name, games.cover.url;
+      where start_time > ${now};
       sort start_time asc;
       limit ${limit};
     `;
@@ -213,18 +223,80 @@ class IGDBService {
 
     try {
       const events: IGDBEvent[] = await response.json();
-      
-      return events
-        .filter(event => event.start_time && event.start_time > now)
-        .map(event => ({
-          ...event,
-          event_networks: [],
-          games: [],
-          start_time: event.start_time - 3600,
-          end_time: event.end_time ? event.end_time - 3600 : undefined,
-        }));
+      return events;
     } catch (error) {
       console.error('Failed to parse IGDB events:', error);
+      return [];
+    }
+  }
+
+  async getEventById(id: number): Promise<IGDBEvent | null> {
+    const token = await this.getAccessToken();
+    
+    const body = `
+      fields name, description, start_time, end_time, live_stream_url, event_logo.url, games.id, games.name, games.cover.url, games.summary, games.first_release_date, games.platforms.name, games.genres.name;
+      where id = ${id};
+    `;
+
+    const response = await fetch('https://api.igdb.com/v4/events', {
+      method: 'POST',
+      headers: {
+        'Client-ID': this.clientId,
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+      },
+      body: body.trim(),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('IGDB Event API error:', errorText);
+      return null;
+    }
+
+    try {
+      const events: IGDBEvent[] = await response.json();
+      return events[0] || null;
+    } catch (error) {
+      console.error('Failed to parse IGDB event:', error);
+      return null;
+    }
+  }
+
+  async getPastEvents(limit: number = 50): Promise<IGDBEvent[]> {
+    const token = await this.getAccessToken();
+    
+    const now = Math.floor(Date.now() / 1000);
+    const sixMonthsAgo = now - (6 * 30 * 24 * 60 * 60);
+    
+    const body = `
+      fields name, description, start_time, end_time, live_stream_url, event_logo.url, games.id, games.name, games.cover.url;
+      where start_time < ${now} & start_time > ${sixMonthsAgo};
+      sort start_time desc;
+      limit ${limit};
+    `;
+
+    const response = await fetch('https://api.igdb.com/v4/events', {
+      method: 'POST',
+      headers: {
+        'Client-ID': this.clientId,
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+      },
+      body: body.trim(),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('IGDB Past Events API error:', errorText);
+      return [];
+    }
+
+    try {
+      const events: IGDBEvent[] = await response.json();
+      return events;
+    } catch (error) {
+      console.error('Failed to parse IGDB past events:', error);
       return [];
     }
   }

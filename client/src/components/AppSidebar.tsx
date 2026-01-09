@@ -5,7 +5,6 @@ import {
   ListPlus,
   Heart,
   Calendar, 
-  Tv,
   Settings,
   Gamepad2
 } from "lucide-react";
@@ -30,7 +29,6 @@ const mainMenuItems = [
   { title: "Wishlist", url: "/wishlist", icon: Heart, testId: "nav-wishlist" },
   { title: "Lists", url: "/lists", icon: ListPlus, testId: "nav-lists" },
   { title: "Calendar", url: "/calendar", icon: Calendar, testId: "nav-calendar" },
-  { title: "Subscription Services", url: "/services", icon: Tv, testId: "nav-services" },
 ];
 
 export function AppSidebar() {

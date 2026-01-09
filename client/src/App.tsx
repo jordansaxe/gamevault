@@ -17,6 +17,8 @@ import Lists from "@/pages/Lists";
 import Calendar from "@/pages/Calendar";
 import StreamingServices from "@/pages/StreamingServices";
 import GameDetail from "@/pages/GameDetail";
+import EventDetail from "@/pages/EventDetail";
+import Search from "@/pages/Search";
 import Landing from "@/pages/Landing";
 import NotFound from "@/pages/not-found";
 
@@ -49,6 +51,8 @@ function Router() {
       <Route path="/calendar" component={Calendar} />
       <Route path="/services" component={StreamingServices} />
       <Route path="/game/:igdbId" component={GameDetail} />
+      <Route path="/event/:eventId" component={EventDetail} />
+      <Route path="/search" component={Search} />
       <Route component={NotFound} />
     </Switch>
   );
