@@ -19,7 +19,9 @@ import StreamingServices from "@/pages/StreamingServices";
 import GameDetail from "@/pages/GameDetail";
 import EventDetail from "@/pages/EventDetail";
 import Search from "@/pages/Search";
-import Landing from "@/pages/Landing";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import Import from "@/pages/Import";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -37,7 +39,13 @@ function Router() {
   }
 
   if (!isAuthenticated) {
-    return <Landing />;
+    return (
+      <Switch>
+        <Route path="/register" component={Register} />
+        <Route path="/login" component={Login} />
+        <Route component={Login} />
+      </Switch>
+    );
   }
 
   return (
@@ -53,6 +61,7 @@ function Router() {
       <Route path="/game/:igdbId" component={GameDetail} />
       <Route path="/event/:eventId" component={EventDetail} />
       <Route path="/search" component={Search} />
+      <Route path="/import" component={Import} />
       <Route component={NotFound} />
     </Switch>
   );

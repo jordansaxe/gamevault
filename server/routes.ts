@@ -3,43 +3,29 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { igdbService } from "./igdb";
 import { insertGameSchema } from "@shared/schema";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./auth";
 import { hltbService } from "./hltbService";
 import { subscriptionService } from "./subscriptionServices";
+import { importService, type ImportFormat } from "./importService";
+import multer from "multer";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // In local dev mode, add a simple redirect for /api/login
-  if (!process.env.REPL_ID || !process.env.DATABASE_URL) {
-    app.get('/api/login', (_req, res) => {
-      res.redirect('/');
-    });
-  }
-
-  // Setup Replit Auth
+  // Setup Authentication
   await setupAuth(app);
 
   // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  app.get('/api/auth/user', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId!;
+      const user = await storage.getUser(userId);
 
-      // In local dev mode, create/return mock user
-      if (!process.env.REPL_ID || !process.env.DATABASE_URL) {
-        let user = await storage.getUser(userId);
-        if (!user) {
-          user = await storage.upsertUser({
-            id: userId,
-            email: req.user.claims.email,
-            firstName: req.user.claims.first_name,
-            lastName: req.user.claims.last_name,
-            profileImageUrl: null,
-          });
-        }
-        return res.json(user);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
       }
 
-      const user = await storage.getUser(userId);
-      res.json(user);
+      // Return user without password hash
+      const { passwordHash: _, ...userWithoutPassword } = user as any;
+      res.json(userWithoutPassword);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
@@ -73,10 +59,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/games", isAuthenticated, async (req: any, res) => {
+  app.post("/api/games", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
-      
+      const userId = req.session.userId!;
+
       const gameData = insertGameSchema.parse({
         ...req.body,
         userId,
@@ -96,9 +82,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/games", isAuthenticated, async (req: any, res) => {
+  app.get("/api/games", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId!;
       const status = req.query.status as string | undefined;
 
       const games = status 
@@ -342,9 +328,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/games/refresh-release-dates", isAuthenticated, async (req: any, res) => {
+  app.post("/api/games/refresh-release-dates", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId!;
       const userGames = await storage.getUserGames(userId);
       
       const uniqueIgdbIds = Array.from(new Set(userGames.map(g => g.igdbId)));
@@ -366,15 +352,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      res.json({ 
-        success: true, 
-        updatedCount, 
+      res.json({
+        success: true,
+        updatedCount,
         totalGames: uniqueIgdbIds.length,
         errors: errors.length > 0 ? errors : undefined
       });
     } catch (error) {
       console.error('Refresh release dates error:', error);
       res.status(500).json({ error: 'Failed to refresh release dates' });
+    }
+  });
+
+  // Import routes
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max
+    fileFilter: (_req, file, cb) => {
+      const allowedTypes = ['application/x-sqlite3', 'application/octet-stream'];
+      const isSqlite = allowedTypes.includes(file.mimetype) ||
+        file.originalname.endsWith('.sqlite') ||
+        file.originalname.endsWith('.db') ||
+        file.originalname.endsWith('.sqlite3');
+
+      if (isSqlite) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only SQLite files are allowed'));
+      }
+    }
+  });
+
+  app.get("/api/import/formats", (_req, res) => {
+    res.json(importService.getSupportedFormats());
+  });
+
+  app.post("/api/import/upload", isAuthenticated, upload.single('file'), async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const format = (req.body.format || 'auto') as ImportFormat;
+
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
+
+      console.log(`Importing file: ${req.file.originalname}, format: ${format}, size: ${req.file.size}`);
+
+      // Parse the SQLite file
+      const games = await importService.parseFile(req.file.buffer.buffer, format);
+
+      if (games.length === 0) {
+        return res.status(400).json({
+          error: 'No games found in the uploaded file',
+          message: 'The file may be empty or in an unsupported format'
+        });
+      }
+
+      console.log(`Found ${games.length} games in file`);
+
+      // Import games
+      const result = await importService.importGames(userId, games, format);
+
+      res.json(result);
+    } catch (error) {
+      console.error('Import error:', error);
+      res.status(500).json({
+        error: 'Failed to import games',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 

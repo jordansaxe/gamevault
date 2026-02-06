@@ -1,9 +1,12 @@
 import { type User, type UpsertUser, type Game, type InsertGame, type SubscriptionCatalogEntry } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { db } from "./db";
+import { SQLStorage } from "./sqlStorage";
 
 export interface IStorage {
-  // User operations for Replit Auth
+  // User operations
   getUser(id: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   
   createGame(game: InsertGame): Promise<Game>;
@@ -61,26 +64,31 @@ export class MemStorage implements IStorage {
     return this.users.get(id);
   }
 
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.email === email);
+  }
+
   async upsertUser(userData: UpsertUser): Promise<User> {
     const existingUser = this.users.get(userData.id!);
     const now = new Date();
-    
-    const user: User = existingUser 
-      ? { 
-          ...existingUser, 
+
+    const user: User = existingUser
+      ? {
+          ...existingUser,
           ...userData,
           updatedAt: now,
         } as User
-      : { 
+      : {
           id: userData.id || randomUUID(),
-          email: userData.email || null,
+          email: userData.email!,
+          passwordHash: userData.passwordHash || null,
           firstName: userData.firstName || null,
           lastName: userData.lastName || null,
           profileImageUrl: userData.profileImageUrl || null,
           createdAt: now,
           updatedAt: now,
         };
-    
+
     this.users.set(user.id, user);
     return user;
   }
@@ -246,4 +254,14 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Factory function to create appropriate storage based on environment
+function createStorage(): IStorage {
+  if (db) {
+    console.log('Using SQLStorage with PostgreSQL database');
+    return new SQLStorage(db);
+  }
+  console.log('No DATABASE_URL found, using in-memory storage (data will be lost on restart)');
+  return new MemStorage();
+}
+
+export const storage = createStorage();

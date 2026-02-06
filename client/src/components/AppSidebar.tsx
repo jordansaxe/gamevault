@@ -1,12 +1,14 @@
-import { 
+import {
   Sparkles,
   Clock,
-  Library, 
+  Library,
   ListPlus,
   Heart,
-  Calendar, 
+  Calendar,
   Settings,
-  Gamepad2
+  Gamepad2,
+  LogOut,
+  Upload
 } from "lucide-react";
 import {
   Sidebar,
@@ -21,18 +23,21 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 
 const mainMenuItems = [
   { title: "New Releases", url: "/new-releases", icon: Sparkles, testId: "nav-new-releases" },
-  { title: "Upcoming", url: "/upcoming", icon: Clock, testId: "nav-upcoming" },
+  { title: "Upcoming Releases", url: "/upcoming", icon: Clock, testId: "nav-upcoming" },
   { title: "My Library", url: "/library", icon: Library, testId: "nav-library" },
   { title: "Wishlist", url: "/wishlist", icon: Heart, testId: "nav-wishlist" },
   { title: "Lists", url: "/lists", icon: ListPlus, testId: "nav-lists" },
-  { title: "Calendar", url: "/calendar", icon: Calendar, testId: "nav-calendar" },
+  { title: "Event Calendar", url: "/calendar", icon: Calendar, testId: "nav-calendar" },
+  { title: "Import", url: "/import", icon: Upload, testId: "nav-import" },
 ];
 
 export function AppSidebar() {
   const [location] = useLocation();
+  const { logout } = useAuth();
 
   return (
     <Sidebar>
@@ -80,6 +85,16 @@ export function AppSidebar() {
                 <Settings className="h-4 w-4" />
                 <span>Settings</span>
               </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={logout}
+              data-testid="nav-logout"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Logout</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
